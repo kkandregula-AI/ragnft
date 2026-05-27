@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RAG & Fine-Tuning · AI Education Series</title>
+<meta name="description" content="Retrieval-Augmented Generation & Fine-Tuning — architecture, pipeline, sample data, and interactive walkthroughs"/>
+<meta name="theme-color" content="#080d18"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="RAG & Fine-Tune"/>
+<link rel="manifest" id="manifest-link"/>
+<link rel="apple-touch-icon" id="apple-icon"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#080d18; --bg2:#0e1525; --bg3:#131d30; --card:#0f1828;
+  --border:#1a2a42; --border2:#1e3352;
+  --gold:#f4b942; --cyan:#38bdf8; --green:#22d3a5;
+  --violet:#8b5cf6; --pink:#f472b6; --orange:#fb923c; --red:#f87171;
+  --text:#e2e8f0; --muted:#6b7fa0; --muted2:#4a5a78;
+  --font-display:'Cinzel',serif; --font-body:'DM Sans',sans-serif; --font-mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
+
+/* ── GRID BG ── */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+
+/* ── GLOW ORBS ── */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);opacity:.18}
+.orb1{width:400px;height:400px;background:radial-gradient(circle,var(--violet),transparent);top:-100px;right:-100px}
+.orb2{width:350px;height:350px;background:radial-gradient(circle,var(--cyan),transparent);bottom:20%;left:-80px}
+.orb3{width:250px;height:250px;background:radial-gradient(circle,var(--green),transparent);bottom:5%;right:10%}
+
+/* ── STARS ── */
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.7}}
+
+/* ── PROGRESS ── */
+#progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--violet),var(--cyan),var(--green));z-index:300;transition:width .15s}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:200;background:rgba(8,13,24,.93);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;justify-content:space-between}
+.badge{font-family:var(--font-display);font-size:.58rem;letter-spacing:.18em;color:var(--cyan);background:rgba(56,189,248,.09);border:1px solid rgba(56,189,248,.28);padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px}
+.badge-dot{width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.ep-tag{font-size:.58rem;font-family:var(--font-display);color:var(--gold);background:rgba(244,185,66,.1);border:1px solid rgba(244,185,66,.25);padding:4px 10px;border-radius:10px;letter-spacing:.1em}
+
+/* ── HERO ── */
+.hero{position:relative;z-index:1;text-align:center;padding:44px 20px 28px}
+.hero-ep{display:inline-flex;align-items:center;gap:8px;font-size:.62rem;letter-spacing:.2em;color:var(--violet);text-transform:uppercase;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);padding:5px 16px;border-radius:20px;margin-bottom:18px}
+.hero h1{font-family:var(--font-display);font-size:clamp(1.5rem,5.5vw,2.5rem);line-height:1.12;margin-bottom:14px}
+.hero h1 .a1{color:var(--violet)} .hero h1 .a2{color:var(--cyan)} .hero h1 .a3{color:var(--green)}
+.hero-sub{color:var(--muted);font-size:.85rem;max-width:390px;margin:0 auto 28px;line-height:1.75}
+.hero-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:4px}
+.chip{font-size:.6rem;font-weight:600;padding:4px 12px;border-radius:20px;letter-spacing:.06em;border:1px solid}
+.chip-v{color:var(--violet);border-color:rgba(139,92,246,.35);background:rgba(139,92,246,.08)}
+.chip-c{color:var(--cyan);border-color:rgba(56,189,248,.35);background:rgba(56,189,248,.08)}
+.chip-g{color:var(--green);border-color:rgba(34,211,165,.35);background:rgba(34,211,165,.08)}
+.chip-o{color:var(--orange);border-color:rgba(251,146,60,.35);background:rgba(251,146,60,.08)}
+
+/* ── RAG vs FT COMPARE BANNER ── */
+.compare-banner{position:relative;z-index:1;margin:0 14px 16px;display:grid;grid-template-columns:1fr auto 1fr;gap:0;background:var(--card);border:1px solid var(--border2);border-radius:16px;overflow:hidden}
+.cmp-side{padding:16px;text-align:center}
+.cmp-side.rag{background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(56,189,248,.04))}
+.cmp-side.ft{background:linear-gradient(135deg,rgba(34,211,165,.06),rgba(244,185,66,.04))}
+.cmp-divider{width:1px;background:var(--border2);position:relative;display:flex;align-items:center;justify-content:center}
+.cmp-divider::after{content:'VS';font-size:.55rem;font-family:var(--font-display);color:var(--muted2);background:var(--card);padding:4px 3px;border:1px solid var(--border);border-radius:4px;white-space:nowrap}
+.cmp-icon{font-size:1.6rem;margin-bottom:4px}
+.cmp-title{font-family:var(--font-display);font-size:.75rem;color:var(--text);margin-bottom:6px}
+.cmp-points{text-align:left;list-style:none}
+.cmp-points li{font-size:.62rem;color:var(--muted);padding:2px 0;display:flex;gap:5px;align-items:flex-start;line-height:1.4}
+.cmp-points li::before{content:'→';color:var(--cyan);flex-shrink:0;font-size:.6rem;margin-top:1px}
+.cmp-side.ft .cmp-points li::before{color:var(--green)}
+
+/* ── MAIN TABS ── */
+.main-tabs{position:relative;z-index:1;display:flex;gap:8px;overflow-x:auto;padding:4px 14px 8px;scrollbar-width:none}
+.main-tabs::-webkit-scrollbar{display:none}
+.mtab{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 13px;cursor:pointer;transition:all .22s;min-width:88px;text-align:center;flex-shrink:0}
+.mtab:hover{border-color:var(--violet)}
+.mtab.active{border-color:var(--violet);background:rgba(139,92,246,.1)}
+.mtab .micon{font-size:1.3rem;margin-bottom:3px}
+.mtab .mname{font-size:.6rem;font-weight:600;color:var(--text);line-height:1.3}
+
+/* ── CONTENT AREA ── */
+.content{position:relative;z-index:1;padding:0 14px 14px}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card-title{font-family:var(--font-display);font-size:1.05rem;color:var(--violet);margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-title .pill{font-size:.58rem;font-family:var(--font-body);background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.3);padding:2px 8px;border-radius:10px;color:var(--violet)}
+.card-title .pill-c{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.3);color:var(--cyan)}
+.card-title .pill-g{background:rgba(34,211,165,.1);border-color:rgba(34,211,165,.3);color:var(--green)}
+.card-title .pill-o{background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:var(--orange)}
+.card-desc{color:#94a3b8;font-size:.82rem;line-height:1.75;margin-bottom:14px}
+
+/* ── PIPELINE FLOW ── */
+.pipeline{display:flex;flex-direction:column;gap:0;margin-bottom:14px}
+.pipe-step{display:flex;gap:12px;position:relative}
+.pipe-step:not(:last-child)::after{content:'';position:absolute;left:17px;top:38px;width:2px;height:calc(100% - 10px);background:linear-gradient(to bottom,var(--violet),transparent)}
+.pipe-num{width:34px;height:34px;border-radius:50%;border:2px solid var(--violet);color:var(--violet);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(139,92,246,.1);margin-top:2px}
+.pipe-body{padding-bottom:18px;flex:1}
+.pipe-title{font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.pipe-title .ptag{font-size:.55rem;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);color:var(--cyan);padding:1px 7px;border-radius:8px}
+.pipe-desc{font-size:.72rem;color:var(--muted);line-height:1.65;margin-bottom:6px}
+.pipe-code{font-family:var(--font-mono);font-size:.68rem;color:var(--cyan);background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.12);border-radius:8px;padding:8px 10px;overflow-x:auto;line-height:1.7}
+.pipe-code .kw{color:var(--violet)} .pipe-code .str{color:var(--green)} .pipe-code .cmt{color:var(--muted);font-style:italic}
+.pipe-code .num{color:var(--orange)} .pipe-code .fn{color:var(--gold)}
+
+/* ── CONCEPT BOX (formula-like) ── */
+.concept-box{background:#080f1e;border:1px solid rgba(139,92,246,.3);border-radius:12px;padding:14px;margin-bottom:12px}
+.concept-label{font-size:.58rem;letter-spacing:.15em;color:var(--violet);font-family:var(--font-display);margin-bottom:8px}
+.concept-body{font-family:var(--font-mono);font-size:.75rem;color:#ddd6fe;line-height:1.85;overflow-x:auto}
+.concept-body .sym{color:var(--gold)} .concept-body .kw{color:var(--cyan)} .concept-body .cmt{color:var(--muted);font-style:italic}
+
+/* ── GRID 2 ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.g-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.g-icon{font-size:1.4rem;margin-bottom:5px}
+.g-name{font-size:.65rem;font-weight:600;margin-bottom:3px}
+.g-desc{font-size:.6rem;color:var(--muted);line-height:1.45}
+
+/* ── STEPS ── */
+.steps-label{font-size:.58rem;letter-spacing:.15em;color:var(--green);font-family:var(--font-display);margin-bottom:10px}
+.step{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+.snum{width:24px;height:24px;border-radius:50%;background:rgba(34,211,165,.12);border:1px solid var(--green);color:var(--green);font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.sbody .st{font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:2px}
+.sbody .sd{font-size:.7rem;color:var(--muted);line-height:1.6}
+.sbody .sc{font-family:var(--font-mono);font-size:.67rem;color:var(--cyan);background:rgba(56,189,248,.06);border-radius:6px;padding:5px 8px;margin-top:5px;display:block;overflow-x:auto;line-height:1.7}
+
+/* ── TABLE ── */
+.tbl-label{font-size:.58rem;letter-spacing:.15em;color:var(--gold);font-family:var(--font-display);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.dl-btn{background:rgba(244,185,66,.12);border:1px solid rgba(244,185,66,.35);color:var(--gold);padding:4px 12px;border-radius:8px;font-size:.58rem;cursor:pointer;font-family:var(--font-body);transition:all .2s}
+.dl-btn:hover{background:rgba(244,185,66,.25)}
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.68rem;font-family:var(--font-mono)}
+th{background:#080f1e;color:var(--cyan);padding:8px 10px;text-align:left;font-size:.58rem;letter-spacing:.08em;border-bottom:1px solid var(--border)}
+td{padding:7px 10px;border-bottom:1px solid rgba(26,42,66,.5);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.018)}
+td.hl{color:var(--gold);font-weight:500}
+td.ok{color:var(--green)}
+td.warn{color:var(--orange)}
+td.bad{color:var(--red)}
+
+/* ── RESULT BOX ── */
+.result-box{background:linear-gradient(135deg,rgba(139,92,246,.07),rgba(56,189,248,.05));border:1px solid rgba(139,92,246,.3);border-radius:12px;padding:14px;margin-top:12px}
+.rlabel{font-size:.58rem;letter-spacing:.15em;color:var(--violet);font-family:var(--font-display);margin-bottom:6px}
+.rvalue{font-family:var(--font-mono);font-size:1rem;color:var(--violet);font-weight:500;margin-bottom:5px}
+.rdesc{font-size:.72rem;color:#94a3b8;line-height:1.65}
+
+/* ── INSIGHT ── */
+.insight{background:rgba(244,185,66,.05);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:11px 13px;margin-top:10px}
+.ititle{font-size:.62rem;color:var(--gold);font-weight:600;margin-bottom:3px;letter-spacing:.05em}
+.itext{font-size:.7rem;color:#94a3b8;line-height:1.65}
+
+/* ── METRIC BARS ── */
+.metric-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.metric-name{font-size:.65rem;color:var(--text);width:110px;flex-shrink:0}
+.metric-bar-wrap{flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:8px;overflow:hidden}
+.metric-bar{height:100%;border-radius:4px;transition:width 1s ease}
+.metric-val{font-family:var(--font-mono);font-size:.62rem;color:var(--muted);width:36px;text-align:right}
+
+/* ── ARCH DIAGRAM ── */
+.arch{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.arch-row{display:flex;gap:6px;justify-content:center;align-items:center}
+.arch-box{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;text-align:center;flex:1;max-width:120px}
+.arch-box .aicon{font-size:1.1rem;margin-bottom:2px}
+.arch-box .aname{font-size:.6rem;font-weight:600;color:var(--text);line-height:1.3}
+.arch-box .asub{font-size:.55rem;color:var(--muted);margin-top:1px}
+.arch-box.active-box{border-color:var(--violet);background:rgba(139,92,246,.1)}
+.arch-box.active-box .aname{color:var(--violet)}
+.arch-arrow{font-size:.9rem;color:var(--muted2);flex-shrink:0}
+.arch-down{text-align:center;color:var(--muted2);font-size:.9rem;margin:2px 0}
+
+/* ── CHUNK VIZ ── */
+.chunk-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.chunk-doc{background:#080f1e;border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:.68rem;color:var(--muted);line-height:1.6;font-family:var(--font-mono)}
+.chunk-row{display:flex;gap:5px;flex-wrap:wrap}
+.chunk{border-radius:6px;padding:5px 8px;font-size:.62rem;font-family:var(--font-mono);line-height:1.5;flex:1;min-width:80px}
+.chunk1{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:#ddd6fe}
+.chunk2{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);color:#bae6fd}
+.chunk3{background:rgba(34,211,165,.08);border:1px solid rgba(34,211,165,.2);color:#a7f3d0}
+.chunk4{background:rgba(244,185,66,.08);border:1px solid rgba(244,185,66,.25);color:#fde68a}
+.overlap-tag{font-size:.55rem;color:var(--orange);background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);padding:1px 6px;border-radius:4px;margin-bottom:4px;display:inline-block}
+
+/* ── COSINE VIZ ── */
+.cosine-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.cos-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.cos-score{font-family:var(--font-mono);font-size:1.1rem;font-weight:700;margin-bottom:2px}
+.cos-label{font-size:.6rem;color:var(--muted);margin-bottom:4px;line-height:1.4}
+.cos-bar{height:5px;border-radius:3px;margin-top:4px}
+
+/* ── EVAL METRICS ── */
+.eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.eval-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px}
+.eval-icon{font-size:1.2rem;margin-bottom:4px}
+.eval-name{font-size:.68rem;font-weight:600;color:var(--text);margin-bottom:2px}
+.eval-desc{font-size:.6rem;color:var(--muted);line-height:1.45;margin-bottom:6px}
+.eval-formula{font-family:var(--font-mono);font-size:.6rem;color:var(--cyan);background:rgba(56,189,248,.06);padding:3px 7px;border-radius:5px}
+
+/* ── FT STAGES ── */
+.ft-stage{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.ft-stage-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ft-badge{font-size:.58rem;font-family:var(--font-display);padding:3px 9px;border-radius:6px;letter-spacing:.08em}
+.ft-title{font-size:.78rem;font-weight:600;color:var(--text)}
+.ft-desc{font-size:.7rem;color:var(--muted);line-height:1.6}
+
+/* ── DECISION MATRIX ── */
+.matrix-table table{font-size:.65rem}
+.matrix-table th{font-size:.6rem}
+.matrix-table td{font-size:.63rem}
+
+/* ── ADVANCED RAG ── */
+.adv-rag-item{border:1px solid var(--border2);border-radius:10px;padding:12px;margin-bottom:10px;background:rgba(255,255,255,.02)}
+.adv-tag{display:inline-block;font-size:.56rem;font-family:var(--font-display);letter-spacing:.1em;padding:2px 8px;border-radius:6px;margin-bottom:6px}
+.adv-name{font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:4px}
+.adv-desc{font-size:.7rem;color:var(--muted);line-height:1.65}
+
+/* ── CITATIONS ── */
+.citations{position:relative;z-index:1;margin:0 14px 80px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+.cit-title{font-family:var(--font-display);font-size:.85rem;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.cit-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(26,42,66,.5)}
+.cit-item:last-child{border-bottom:none}
+.cit-num{width:22px;height:22px;border-radius:50%;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:var(--violet);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.cit-body .cn{font-size:.7rem;font-weight:600;color:var(--text);margin-bottom:2px}
+.cit-body .cd{font-size:.63rem;color:var(--muted);line-height:1.5}
+.cit-body a{font-size:.6rem;color:var(--cyan);text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-top:3px}
+.cit-body a:hover{text-decoration:underline}
+.free-badge{font-size:.52rem;background:rgba(34,211,165,.12);border:1px solid rgba(34,211,165,.28);color:var(--green);padding:1px 6px;border-radius:8px;margin-left:5px}
+
+/* ── BACK BTN ── */
+.back-btn{display:block;margin:12px auto 0;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);color:var(--violet);padding:8px 22px;border-radius:20px;font-size:.65rem;cursor:pointer;font-family:var(--font-body);transition:all .2s}
+.back-btn:hover{background:rgba(139,92,246,.22)}
+
+/* ── FOOTER ── */
+footer{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(8,13,24,.96);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:9px 18px;text-align:center}
+.footer-text{font-size:.58rem;color:var(--muted);letter-spacing:.1em;font-family:var(--font-display)}
+.footer-text span{color:var(--gold)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+@media(max-width:380px){.grid2,.grid3{grid-template-columns:1fr 1fr}.cosine-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div id="stars"></div>
+<div id="progress"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="badge"><span class="badge-dot"></span>🚀 AI EDUCATION SERIES</div>
+  <div class="hdr-right"><div class="ep-tag">EP · 03</div></div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-ep">🔮 Episode 3 · RAG &amp; Fine-Tuning</div>
+  <h1><span class="a1">Retrieval-</span><span class="a2">Augmented</span><br><span class="a3">Generation</span> &amp; Fine-Tuning</h1>
+  <div class="hero-sub">How AI models use external knowledge in real-time (RAG) — and how they permanently learn new behaviour (Fine-Tuning). With live walkthroughs and downloadable test datasets.</div>
+  <div class="hero-chips">
+    <span class="chip chip-v">RAG Pipeline</span>
+    <span class="chip chip-c">Vector Search</span>
+    <span class="chip chip-g">Fine-Tuning</span>
+    <span class="chip chip-o">Evaluation</span>
+  </div>
+</div>
+
+<!-- RAG vs FT COMPARE -->
+<div class="compare-banner">
+  <div class="cmp-side rag">
+    <div class="cmp-icon">🔮</div>
+    <div class="cmp-title">RAG</div>
+    <ul class="cmp-points">
+      <li>No retraining needed</li>
+      <li>Knowledge updated live</li>
+      <li>Cites its sources</li>
+      <li>Lower cost to deploy</li>
+      <li>Great for dynamic data</li>
+    </ul>
+  </div>
+  <div class="cmp-divider"></div>
+  <div class="cmp-side ft">
+    <div class="cmp-icon">🧬</div>
+    <div class="cmp-title">Fine-Tuning</div>
+    <ul class="cmp-points">
+      <li>Bakes knowledge in weights</li>
+      <li>Better tone &amp; style control</li>
+      <li>No retrieval latency</li>
+      <li>Expensive to retrain</li>
+      <li>Great for static expertise</li>
+    </ul>
+  </div>
+</div>
+
+<!-- MAIN TABS -->
+<div class="main-tabs" id="mainTabs">
+  <div class="mtab active" onclick="showTab(0)"><div class="micon">🏗️</div><div class="mname">RAG Architecture</div></div>
+  <div class="mtab" onclick="showTab(1)"><div class="micon">✂️</div><div class="mname">Chunking</div></div>
+  <div class="mtab" onclick="showTab(2)"><div class="micon">🔢</div><div class="mname">Embeddings</div></div>
+  <div class="mtab" onclick="showTab(3)"><div class="micon">🔍</div><div class="mname">Vector Search</div></div>
+  <div class="mtab" onclick="showTab(4)"><div class="micon">⚡</div><div class="mname">RAG Pipeline</div></div>
+  <div class="mtab" onclick="showTab(5)"><div class="micon">📊</div><div class="mname">RAG Evaluation</div></div>
+  <div class="mtab" onclick="showTab(6)"><div class="micon">🚀</div><div class="mname">Advanced RAG</div></div>
+  <div class="mtab" onclick="showTab(7)"><div class="micon">🧬</div><div class="mname">Fine-Tuning</div></div>
+  <div class="mtab" onclick="showTab(8)"><div class="micon">⚖️</div><div class="mname">RAG vs FT Matrix</div></div>
+</div>
+
+<!-- CONTENT -->
+<div class="content" id="content"></div>
+
+<!-- CITATIONS -->
+<div class="citations" id="citations">
+  <div class="cit-title">📚 Citations &amp; Free Resources</div>
+
+  <div class="cit-item"><div class="cit-num">1</div><div class="cit-body">
+    <div class="cn">Lewis et al. (2020) — "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" — Meta AI <span class="free-badge">FREE</span></div>
+    <div class="cd">The original RAG paper that introduced the architecture. Essential reading for understanding the foundation.</div>
+    <a href="https://arxiv.org/abs/2005.11401" target="_blank">🔗 arxiv.org/abs/2005.11401</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">2</div><div class="cit-body">
+    <div class="cn">LangChain Documentation — RAG Tutorials <span class="free-badge">FREE</span></div>
+    <div class="cd">Practical step-by-step tutorials for building RAG pipelines with document loaders, splitters, vector stores, and chains.</div>
+    <a href="https://python.langchain.com/docs/tutorials/rag/" target="_blank">🔗 python.langchain.com/docs/tutorials/rag</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">3</div><div class="cit-body">
+    <div class="cn">Anthropic — "Contextual Retrieval" Blog Post <span class="free-badge">FREE</span></div>
+    <div class="cd">Anthropic's research on significantly improving RAG retrieval accuracy using contextual chunk enrichment.</div>
+    <a href="https://www.anthropic.com/news/contextual-retrieval" target="_blank">🔗 anthropic.com/news/contextual-retrieval</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">4</div><div class="cit-body">
+    <div class="cn">Gao et al. (2023) — "Retrieval-Augmented Generation for Large Language Models: A Survey" <span class="free-badge">FREE</span></div>
+    <div class="cd">Comprehensive survey of RAG architectures — Naive RAG, Advanced RAG, Modular RAG. Must-read for practitioners.</div>
+    <a href="https://arxiv.org/abs/2312.10997" target="_blank">🔗 arxiv.org/abs/2312.10997</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">5</div><div class="cit-body">
+    <div class="cn">Hugging Face — Fine-Tuning Course <span class="free-badge">FREE</span></div>
+    <div class="cd">Practical NLP fine-tuning with Transformers, LoRA, QLoRA and PEFT. Python notebooks included.</div>
+    <a href="https://huggingface.co/learn/nlp-course" target="_blank">🔗 huggingface.co/learn/nlp-course</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">6</div><div class="cit-body">
+    <div class="cn">Hu et al. (2021) — "LoRA: Low-Rank Adaptation of Large Language Models" <span class="free-badge">FREE</span></div>
+    <div class="cd">The landmark paper for parameter-efficient fine-tuning. Explains why you don't need to update all model weights.</div>
+    <a href="https://arxiv.org/abs/2106.09685" target="_blank">🔗 arxiv.org/abs/2106.09685</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">7</div><div class="cit-body">
+    <div class="cn">RAGAS — RAG Evaluation Framework <span class="free-badge">FREE / Open Source</span></div>
+    <div class="cd">The leading open-source framework to evaluate RAG pipelines: faithfulness, answer relevancy, context precision and recall.</div>
+    <a href="https://docs.ragas.io" target="_blank">🔗 docs.ragas.io</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">8</div><div class="cit-body">
+    <div class="cn">Pinecone — "What is a Vector Database?" <span class="free-badge">FREE</span></div>
+    <div class="cd">Clear guide to vector embeddings, cosine similarity, and how vector databases like Pinecone, FAISS, and Chroma work.</div>
+    <a href="https://www.pinecone.io/learn/vector-database/" target="_blank">🔗 pinecone.io/learn/vector-database</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">9</div><div class="cit-body">
+    <div class="cn">DeepLearning.AI — "Building and Evaluating Advanced RAG" (Short Course) <span class="free-badge">FREE</span></div>
+    <div class="cd">Free short course by Andrew Ng's team covering sentence-window retrieval, auto-merging, and TruLens evaluation.</div>
+    <a href="https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/" target="_blank">🔗 deeplearning.ai — Advanced RAG Course</a>
+  </div></div>
+
+  <div class="cit-item"><div class="cit-num">10</div><div class="cit-body">
+    <div class="cn">OpenAI — Fine-Tuning Guide <span class="free-badge">FREE</span></div>
+    <div class="cd">Official guide to fine-tuning GPT models including data preparation, JSONL format, hyperparameters, and evaluation.</div>
+    <a href="https://platform.openai.com/docs/guides/fine-tuning" target="_blank">🔗 platform.openai.com/docs/guides/fine-tuning</a>
+  </div></div>
+
+  <button class="back-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-text">🚀 AI EDUCATION SERIES · <span>RAG &amp; Fine-Tuning</span> · Krishnamurthy Kandregula · INNOVATION LAB</div>
+</footer>
+
+<script>
+// ── STARS ──
+(function(){
+  const c=document.getElementById('stars');
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*1.8+.4;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;animation-delay:${(Math.random()*6).toFixed(1)}s`;
+    c.appendChild(s);
+  }
+})();
+
+// ── SCROLL PROGRESS ──
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  document.getElementById('progress').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+});
+
+// ── CSV DOWNLOAD ──
+function dlCSV(name,content){
+  const b=new Blob([content],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+}
+function dlJSON(name,content){
+  const b=new Blob([JSON.stringify(content,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+}
+
+// ── TABS DATA ──
+const tabs=[
+  // ── 0: RAG ARCHITECTURE ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">🏗️ What is RAG? — The Full Architecture <span class="pill">Retrieval-Augmented Generation</span></div>
+      <div class="card-desc">RAG solves a fundamental problem with LLMs: their knowledge is frozen at training time. RAG gives the model a live library — it retrieves relevant documents at query time and feeds them into the context window alongside the user's question, enabling grounded, up-to-date, and cite-able answers without retraining.</div>
+
+      <div class="concept-box">
+        <div class="concept-label">🔬 THE RAG FORMULA</div>
+        <div class="concept-body">
+<span class="cmt">// Standard LLM</span>
+<span class="sym">P(answer | question)</span>
+
+<span class="cmt">// RAG-augmented LLM</span>
+<span class="sym">P(answer | question, retrieved_docs)</span>
+         = Σ <span class="kw">P(answer | question, doc)</span> · <span class="kw">P(doc | question)</span>
+
+<span class="cmt">// Where P(doc | question) is the retriever</span>
+<span class="cmt">// And P(answer | ...) is the generator (LLM)</span>
+        </div>
+      </div>
+
+      <div class="arch">
+        <div class="arch-row">
+          <div class="arch-box"><div class="aicon">📄</div><div class="aname">Raw Documents</div><div class="asub">PDF, Web, DB</div></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box"><div class="aicon">✂️</div><div class="aname">Chunker</div><div class="asub">Split text</div></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box"><div class="aicon">🔢</div><div class="aname">Embedder</div><div class="asub">text-to-vector</div></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box active-box"><div class="aicon">🗄️</div><div class="aname">Vector Store</div><div class="asub">FAISS/Chroma</div></div>
+        </div>
+        <div class="arch-down">⬇ INDEX PHASE (offline) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇ QUERY PHASE (online)</div>
+        <div class="arch-row">
+          <div class="arch-box"><div class="aicon">💬</div><div class="aname">User Query</div><div class="asub">Question</div></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box"><div class="aicon">🔢</div><div class="aname">Embed Query</div><div class="asub">same model</div></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box active-box"><div class="aicon">🔍</div><div class="aname">Similarity Search</div><div class="asub">Top-K docs</div></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box active-box"><div class="aicon">🤖</div><div class="aname">LLM Generator</div><div class="asub">+ context</div></div>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="g-item"><div class="g-icon">📚</div><div class="g-name" style="color:var(--violet)">Knowledge Base</div><div class="g-desc">Any corpus: docs, PDFs, wikis, SQL — the model's external memory</div></div>
+        <div class="g-item"><div class="g-icon">🔮</div><div class="g-name" style="color:var(--cyan)">Retriever</div><div class="g-desc">Dense (embeddings), Sparse (BM25), or Hybrid — fetches relevant chunks</div></div>
+        <div class="g-item"><div class="g-icon">✍️</div><div class="g-name" style="color:var(--green)">Generator</div><div class="g-desc">LLM (GPT, Claude, Llama) conditioned on query + retrieved context</div></div>
+      </div>
+
+      <div class="insight"><div class="ititle">💡 WHY RAG BEATS PURE LLM FOR ENTERPRISE</div><div class="itext">An LLM trained in 2024 knows nothing about your company's Q1 2025 financials. RAG plugs that gap — feed your internal documents into a vector store, and the LLM answers as if it's your company's expert. Used by Notion AI, Perplexity, GitHub Copilot, and every major enterprise AI deployment.</div></div>
+    </div>
+  `},
+
+  // ── 1: CHUNKING ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">✂️ Text Chunking Strategies <span class="pill">Document Processing</span></div>
+      <div class="card-desc">Chunking is how you split documents before embedding. Chunk size is the single biggest lever on RAG quality — too large and you retrieve noisy context, too small and you lose meaning. Overlap preserves context across chunk boundaries.</div>
+
+      <div class="concept-box">
+        <div class="concept-label">🔬 KEY PARAMETERS</div>
+        <div class="concept-body">
+<span class="sym">chunk_size</span>    = <span class="kw">256–512 tokens</span>  <span class="cmt">// Most common sweet spot</span>
+<span class="sym">chunk_overlap</span> = <span class="kw">20–50 tokens</span>   <span class="cmt">// Sliding window to preserve context</span>
+<span class="sym">separators</span>    = <span class="kw">["\\n\\n","\\n","."," "]</span>  <span class="cmt">// Priority hierarchy</span>
+        </div>
+      </div>
+
+      <div class="chunk-wrap">
+        <div class="tbl-label" style="margin-bottom:6px">📄 ORIGINAL DOCUMENT (Sample: Medical FAQ)</div>
+        <div class="chunk-doc">Hypertension, or high blood pressure, is a long-term medical condition. It occurs when the force of blood against artery walls is too high. Most people have no symptoms. It is diagnosed when systolic pressure exceeds 140 mmHg or diastolic exceeds 90 mmHg. Lifestyle changes including diet, exercise, and stress reduction are first-line treatments. Medications such as ACE inhibitors and beta-blockers are used when lifestyle changes are insufficient.</div>
+        <div style="font-size:.6rem;color:var(--muted);margin:6px 0 4px">→ Chunked into 4 segments (chunk_size=80 tokens, overlap=15 tokens):</div>
+        <span class="overlap-tag">⚠ Overlapping tokens shown between adjacent chunks</span>
+        <div class="chunk-row">
+          <div class="chunk chunk1"><b>Chunk 1:</b> Hypertension, or high blood pressure, is a long-term medical condition. It occurs when the force of blood against artery walls is too high.</div>
+          <div class="chunk chunk2"><b>Chunk 2:</b> ...artery walls is too high. Most people have no symptoms. It is diagnosed when systolic pressure exceeds 140 mmHg or diastolic exceeds 90 mmHg.</div>
+        </div>
+        <div class="chunk-row" style="margin-top:5px">
+          <div class="chunk chunk3"><b>Chunk 3:</b> ...diastolic exceeds 90 mmHg. Lifestyle changes including diet, exercise, and stress reduction are first-line treatments.</div>
+          <div class="chunk chunk4"><b>Chunk 4:</b> ...stress reduction are first-line treatments. Medications such as ACE inhibitors and beta-blockers are used when lifestyle changes are insufficient.</div>
+        </div>
+      </div>
+
+      <div class="tbl-label">📋 CHUNKING STRATEGIES COMPARISON <button class="dl-btn" onclick="dlCSV('chunking_strategies.csv',\`Strategy,Chunk Size (tokens),Overlap,Best For,Drawback,Tools\\nFixed Size,256-512,50,General docs — fast baseline,Cuts mid-sentence,LangChain RecursiveTextSplitter\\nSentence,1 sentence,0,QA systems needing precision,Short context,spaCy / NLTK\\nParagraph,200-400,20,Articles / reports,Uneven sizes,HTML/Markdown splitters\\nSemantic,varies (by meaning),none,Dense domain docs,Slower / complex,LlamaIndex SemanticSplitter\\nRecursive Character,256-512,20,Code + prose mixed,Needs tuning,LangChain default\\nParent-Child,128 child / 512 parent,10,Advanced RAG precision,Complex indexing,LlamaIndex\\n\`)">⬇ Download CSV</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Strategy</th><th>Chunk Size</th><th>Overlap</th><th>Best For</th><th>Tool</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">Fixed Size</td><td>256–512 tokens</td><td>50 tokens</td><td>General docs (baseline)</td><td>RecursiveTextSplitter</td></tr>
+          <tr><td class="hl">Sentence</td><td>1 sentence</td><td>0</td><td>QA precision</td><td>spaCy / NLTK</td></tr>
+          <tr><td class="hl">Paragraph</td><td>200–400 tokens</td><td>20 tokens</td><td>Articles, reports</td><td>HTML/MD splitter</td></tr>
+          <tr><td class="hl">Semantic</td><td>Varies</td><td>None</td><td>Dense domain docs</td><td>LlamaIndex Semantic</td></tr>
+          <tr><td class="hl">Parent-Child</td><td>128 / 512</td><td>10 tokens</td><td>Advanced RAG</td><td>LlamaIndex</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="insight"><div class="ititle">💡 PRODUCTION RECOMMENDATION</div><div class="itext">Start with RecursiveCharacterTextSplitter at chunk_size=512, overlap=50. Then evaluate with RAGAS. If context precision is low → smaller chunks. If answer completeness is low → larger chunks or parent-child strategy. Semantic chunking improves results by ~15–20% on domain-specific corpora at the cost of speed.</div></div>
+    </div>
+  `},
+
+  // ── 2: EMBEDDINGS ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">🔢 Text Embeddings <span class="pill pill-c">Vector Representations</span></div>
+      <div class="card-desc">An embedding model converts text into a dense vector of floating-point numbers — typically 768 to 3072 dimensions. Semantically similar texts produce vectors that are close in vector space. This is the magic that enables semantic search — the retriever finds documents that mean the same thing, not just share the same words.</div>
+
+      <div class="concept-box">
+        <div class="concept-label">🔬 WHAT HAPPENS DURING EMBEDDING</div>
+        <div class="concept-body">
+<span class="cmt">// Input text → transformer encoder → pooling → L2 normalised vector</span>
+<span class="sym">"blood pressure treatment"</span>
+      ↓ <span class="kw">text-embedding-3-small</span>
+<span class="sym">[-0.023, 0.411, 0.188, -0.302, 0.076, ..., 0.219]</span>  <span class="cmt">// 1536 dims</span>
+
+<span class="sym">"hypertension medication"</span>
+      ↓ <span class="kw">same model</span>
+<span class="sym">[-0.019, 0.398, 0.201, -0.289, 0.081, ..., 0.204]</span>  <span class="cmt">// very similar!</span>
+
+<span class="sym">"cooking pasta recipe"</span>
+      ↓ <span class="kw">same model</span>
+<span class="sym">[ 0.312, -0.187, -0.044, 0.521, -0.198, ..., -0.033]</span> <span class="cmt">// very different</span>
+        </div>
+      </div>
+
+      <div class="tbl-label">📋 EMBEDDING MODELS COMPARISON <button class="dl-btn" onclick="dlCSV('embedding_models.csv',\`Model,Dimensions,Context Window,Speed,Cost,Best For\\ntext-embedding-3-small,1536,8191,Fast,Low,$0.02/1M tokens,General RAG production\\ntext-embedding-3-large,3072,8191,Medium,Higher,$0.13/1M tokens,High accuracy needs\\nall-MiniLM-L6-v2,384,256,Very Fast,Free,Local / edge / testing\\nall-mpnet-base-v2,768,384,Fast,Free,Open-source production\\nbge-large-en-v1.5,1024,512,Medium,Free,State-of-art open source\\nE5-mistral-7b-instruct,4096,32768,Slow,Free,Long document RAG\\nnomic-embed-text,768,8192,Fast,Free,Best free long context\\n\`)">⬇ Download CSV</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Model</th><th>Dims</th><th>Context</th><th>Cost</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">text-embedding-3-small</td><td>1536</td><td>8191 tok</td><td class="warn">$0.02/1M</td><td>General RAG (prod)</td></tr>
+          <tr><td class="hl">text-embedding-3-large</td><td>3072</td><td>8191 tok</td><td class="warn">$0.13/1M</td><td>High accuracy</td></tr>
+          <tr><td class="hl">all-MiniLM-L6-v2</td><td>384</td><td>256 tok</td><td class="ok">Free</td><td>Local / testing</td></tr>
+          <tr><td class="hl">bge-large-en-v1.5</td><td>1024</td><td>512 tok</td><td class="ok">Free</td><td>Best open source</td></tr>
+          <tr><td class="hl">nomic-embed-text</td><td>768</td><td>8192 tok</td><td class="ok">Free</td><td>Long-context RAG</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="steps-label">🧪 STEP-BY-STEP: EMBEDDING A QUERY</div>
+      <div class="step"><div class="snum">1</div><div class="sbody"><div class="st">User submits query</div><div class="sd">Question: "What medications are used for high blood pressure?"</div></div></div>
+      <div class="step"><div class="snum">2</div><div class="sbody"><div class="st">Tokenise the query</div><div class="sd">Break into subword tokens using the model's tokenizer</div><code class="sc">tokens = ["What","medic","##ations","are","used","for","high","blood","pressure","?"]</code></div></div>
+      <div class="step"><div class="snum">3</div><div class="sbody"><div class="st">Pass through encoder</div><div class="sd">Transformer produces a 1536-dim vector (CLS token pooling)</div><code class="sc">query_vector = embed("What medications are used for high blood pressure?")\n→ shape: (1536,)  range: [-1.0, 1.0]</code></div></div>
+      <div class="step"><div class="snum">4</div><div class="sbody"><div class="st">L2 Normalise</div><div class="sd">Scale vector to unit length so cosine similarity = dot product</div><code class="sc">query_vector = query_vector / ||query_vector||₂</code></div></div>
+      <div class="step"><div class="snum">5</div><div class="sbody"><div class="st">Ready for similarity search</div><div class="sd">Compare against all stored document chunk vectors in vector store</div></div></div>
+
+      <div class="insight"><div class="ititle">💡 WHY DIMENSIONS MATTER</div><div class="itext">Higher dimensions = more expressive representations but more storage and slower search. 1536 dims per chunk × 1 million chunks = ~6GB of float32 vectors. For production, use quantised vectors (int8) to reduce to ~1.5GB. FAISS's IVF index makes billion-scale similarity search feasible.</div></div>
+    </div>
+  `},
+
+  // ── 3: VECTOR SEARCH ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">🔍 Vector Similarity Search <span class="pill pill-c">Cosine · Dot Product · Euclidean</span></div>
+      <div class="card-desc">Once text is embedded into vectors, we find the most relevant documents by computing similarity between the query vector and all stored chunk vectors. The three main similarity metrics each have different properties and use cases.</div>
+
+      <div class="concept-box">
+        <div class="concept-label">🔬 SIMILARITY FORMULAS</div>
+        <div class="concept-body">
+<span class="cmt">// Cosine Similarity — angle between vectors (most common in RAG)</span>
+<span class="sym">cos(A,B)</span> = <span class="kw">(A · B) / (||A|| · ||B||)</span>  <span class="cmt">// range: -1 to +1</span>
+
+<span class="cmt">// Dot Product — works if vectors are L2-normalised (= cosine then)</span>
+<span class="sym">dot(A,B)</span> = <span class="kw">Σ aᵢ · bᵢ</span>
+
+<span class="cmt">// Euclidean Distance — geometric distance (lower = more similar)</span>
+<span class="sym">L2(A,B)</span>  = <span class="kw">√Σ(aᵢ − bᵢ)²</span>
+        </div>
+      </div>
+
+      <div class="steps-label">🧪 WORKED EXAMPLE — 3-DIMENSIONAL VECTORS (simplified)</div>
+      <div class="step"><div class="snum">1</div><div class="sbody"><div class="st">Query vector Q and 3 document vectors</div><code class="sc">Q  = [0.8, 0.5, 0.3]   ← "blood pressure medications"
+D1 = [0.7, 0.6, 0.2]   ← "ACE inhibitors for hypertension"
+D2 = [0.1, 0.2, 0.9]   ← "pasta carbonara recipe"
+D3 = [0.6, 0.7, 0.1]   ← "antihypertensive drug classes"</code></div></div>
+      <div class="step"><div class="snum">2</div><div class="sbody"><div class="st">Compute Cosine Similarity: Q · D1</div><code class="sc">Dot = (0.8×0.7)+(0.5×0.6)+(0.3×0.2) = 0.56+0.30+0.06 = 0.92
+||Q|| = √(0.64+0.25+0.09) = √0.98 = 0.990
+||D1|| = √(0.49+0.36+0.04) = √0.89 = 0.944
+cos(Q,D1) = 0.92 / (0.990 × 0.944) = 0.92/0.935 = <b>0.984</b> ✅ Very High</code></div></div>
+      <div class="step"><div class="snum">3</div><div class="sbody"><div class="st">Compute Cosine Similarity: Q · D2 (pasta)</div><code class="sc">Dot = (0.8×0.1)+(0.5×0.2)+(0.3×0.9) = 0.08+0.10+0.27 = 0.45
+||D2|| = √(0.01+0.04+0.81) = √0.86 = 0.927
+cos(Q,D2) = 0.45 / (0.990 × 0.927) = 0.45/0.918 = <b>0.490</b> ❌ Low — correctly excluded</code></div></div>
+      <div class="step"><div class="snum">4</div><div class="sbody"><div class="st">Rank by similarity — retrieve Top-K=2</div><code class="sc">D1: 0.984  ← RETRIEVED ✅
+D3: 0.961  ← RETRIEVED ✅
+D2: 0.490  ← NOT retrieved ✅ (pasta correctly excluded)</code></div></div>
+
+      <div class="cosine-grid">
+        <div class="cos-item"><div class="cos-score" style="color:var(--green)">0.984</div><div class="cos-label">D1 · ACE inhibitors for hypertension</div><div class="cos-bar" style="background:var(--green);width:98%"></div></div>
+        <div class="cos-item"><div class="cos-score" style="color:var(--cyan)">0.961</div><div class="cos-label">D3 · Antihypertensive drug classes</div><div class="cos-bar" style="background:var(--cyan);width:96%"></div></div>
+        <div class="cos-item"><div class="cos-score" style="color:var(--red)">0.490</div><div class="cos-label">D2 · Pasta carbonara recipe</div><div class="cos-bar" style="background:var(--red);width:49%"></div></div>
+      </div>
+
+      <div class="tbl-label">📋 VECTOR DATABASES COMPARISON <button class="dl-btn" onclick="dlCSV('vector_databases.csv',\`Database,Type,Index Type,Scale,Cost,Best For\\nFAISS,Library,IVF + HNSW,Billion+,Free,Local / research\\nChroma,DB (local),HNSW,Millions,Free,Prototyping / local dev\\nPinecone,Managed cloud,HNSW,Billion+,Paid,Production SaaS\\nWeaviate,Hybrid DB,HNSW,Billion+,Free/Paid,Hybrid search prod\\nQdrant,DB,HNSW,Billion+,Free/Paid,High-performance prod\\nPgvector,PostgreSQL ext,IVFFlat,Millions,Free,Existing Postgres apps\\nRedis VSS,Redis module,HNSW,Millions,Free/Paid,Low-latency cache+search\\n\`)">⬇ Download CSV</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Database</th><th>Type</th><th>Scale</th><th>Cost</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">FAISS</td><td>Library</td><td>Billion+</td><td class="ok">Free</td><td>Local / research</td></tr>
+          <tr><td class="hl">Chroma</td><td>Local DB</td><td>Millions</td><td class="ok">Free</td><td>Prototyping</td></tr>
+          <tr><td class="hl">Pinecone</td><td>Cloud</td><td>Billion+</td><td class="warn">Paid</td><td>SaaS production</td></tr>
+          <tr><td class="hl">Weaviate</td><td>Hybrid DB</td><td>Billion+</td><td class="ok">Free/Paid</td><td>Hybrid search</td></tr>
+          <tr><td class="hl">Qdrant</td><td>DB</td><td>Billion+</td><td class="ok">Free/Paid</td><td>High performance</td></tr>
+          <tr><td class="hl">pgvector</td><td>PostgreSQL ext</td><td>Millions</td><td class="ok">Free</td><td>Existing Postgres</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="insight"><div class="ititle">💡 HNSW vs IVF</div><div class="itext">HNSW (Hierarchical Navigable Small World) is the gold standard — O(log n) search time with ~95%+ recall. IVF (Inverted File Index) is faster for very large scales but needs training. For most RAG apps (&lt;10M chunks), HNSW with Chroma or Qdrant is the right choice.</div></div>
+    </div>
+  `},
+
+  // ── 4: FULL RAG PIPELINE ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">⚡ Full RAG Pipeline — End to End <span class="pill pill-g">With Sample Data</span></div>
+      <div class="card-desc">A complete walkthrough of the RAG pipeline from raw document to final AI answer, using a medical FAQ as our knowledge base. Follow every step with the downloadable test dataset.</div>
+
+      <div class="steps-label">🧪 COMPLETE PIPELINE WALKTHROUGH</div>
+
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-num">1</div>
+          <div class="pipe-body">
+            <div class="pipe-title">Document Ingestion <span class="ptag">OFFLINE</span></div>
+            <div class="pipe-desc">Load source documents. Any format: PDF, HTML, Markdown, plain text, database rows.</div>
+            <div class="pipe-code"><span class="kw">from</span> langchain.document_loaders <span class="kw">import</span> PyPDFLoader<br>loader = <span class="fn">PyPDFLoader</span>(<span class="str">"medical_faq.pdf"</span>)<br>docs = loader.<span class="fn">load</span>()  <span class="cmt"># returns list of Document objects</span><br>print(<span class="fn">len</span>(docs), <span class="str">"pages loaded"</span>)  <span class="cmt"># → 24 pages loaded</span></div>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">2</div>
+          <div class="pipe-body">
+            <div class="pipe-title">Chunking <span class="ptag">OFFLINE</span></div>
+            <div class="pipe-desc">Split documents into overlapping chunks. Preserve metadata for citations.</div>
+            <div class="pipe-code"><span class="kw">from</span> langchain.text_splitter <span class="kw">import</span> RecursiveCharacterTextSplitter<br>splitter = <span class="fn">RecursiveCharacterTextSplitter</span>(<br>  chunk_size=<span class="num">512</span>, chunk_overlap=<span class="num">50</span>,<br>  add_start_index=<span class="kw">True</span><br>)<br>chunks = splitter.<span class="fn">split_documents</span>(docs)<br>print(<span class="fn">len</span>(chunks), <span class="str">"chunks created"</span>)  <span class="cmt"># → 187 chunks</span></div>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">3</div>
+          <div class="pipe-body">
+            <div class="pipe-title">Embed &amp; Store <span class="ptag">OFFLINE</span></div>
+            <div class="pipe-desc">Embed all chunks using an embedding model, then store in a vector database.</div>
+            <div class="pipe-code"><span class="kw">from</span> langchain_openai <span class="kw">import</span> OpenAIEmbeddings<br><span class="kw">from</span> langchain_chroma <span class="kw">import</span> Chroma<br>embeddings = <span class="fn">OpenAIEmbeddings</span>(model=<span class="str">"text-embedding-3-small"</span>)<br>vectorstore = Chroma.<span class="fn">from_documents</span>(chunks, embeddings)<br><span class="cmt"># 187 chunks × 1536 dims embedded and indexed</span></div>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">4</div>
+          <div class="pipe-body">
+            <div class="pipe-title">Query &amp; Retrieve <span class="ptag">ONLINE</span></div>
+            <div class="pipe-desc">User query is embedded with the same model. Top-K most similar chunks retrieved.</div>
+            <div class="pipe-code">query = <span class="str">"What medications treat high blood pressure?"</span><br>retriever = vectorstore.<span class="fn">as_retriever</span>(search_kwargs={<span class="str">"k"</span>: <span class="num">4</span>})<br>retrieved_docs = retriever.<span class="fn">invoke</span>(query)<br><span class="cmt"># Returns 4 most semantically relevant chunks</span><br><span class="cmt"># cos_sim: [0.984, 0.961, 0.923, 0.887]</span></div>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">5</div>
+          <div class="pipe-body">
+            <div class="pipe-title">Prompt Construction <span class="ptag">ONLINE</span></div>
+            <div class="pipe-desc">Inject retrieved chunks into the LLM prompt as context. Structure: system + context + question.</div>
+            <div class="pipe-code">prompt = <span class="fn">f</span><span class="str">"""You are a medical information assistant.<br>Answer using ONLY the context below. Cite your sources.<br><br>Context:<br>{retrieved_docs[0].page_content}<br>{retrieved_docs[1].page_content}<br>...<br><br>Question: {query}<br>Answer:"""</span></div>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">6</div>
+          <div class="pipe-body">
+            <div class="pipe-title">LLM Generation <span class="ptag">ONLINE</span></div>
+            <div class="pipe-desc">LLM generates an answer grounded in retrieved context. Answer is cited, accurate, and up-to-date.</div>
+            <div class="pipe-code">response = <span class="fn">llm.invoke</span>(prompt)<br><span class="cmt"># Answer: "First-line medications for hypertension include</span><br><span class="cmt"># ACE inhibitors (lisinopril), beta-blockers (metoprolol),</span><br><span class="cmt"># and calcium channel blockers (amlodipine)...</span><br><span class="cmt"># [Source: medical_faq.pdf, page 7, chunk 34]"</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tbl-label">📋 SAMPLE RAG TEST DATASET — Medical FAQ <button class="dl-btn" onclick="dlCSV('rag_pipeline_test_data.csv',\`Query,Expected_Answer_Topic,Retrieved_Chunk_1,Retrieved_Chunk_2,Cosine_Sim_1,Cosine_Sim_2,RAG_Answer_Quality\\nWhat medications treat high blood pressure?,ACE inhibitors / beta-blockers / CCBs,ACE inhibitors for hypertension treatment,antihypertensive drug classes overview,0.984,0.961,High\\nWhat is the normal blood pressure range?,120/80 mmHg definition,blood pressure measurement and normal ranges,hypertension diagnosis criteria,0.971,0.944,High\\nHow is diabetes diagnosed?,HbA1c and fasting glucose thresholds,diabetes diagnosis criteria HbA1c,fasting glucose test for diabetes,0.963,0.931,High\\nWhat causes Type 2 diabetes?,Insulin resistance and lifestyle factors,type 2 diabetes causes and risk factors,obesity and insulin resistance pathway,0.955,0.918,High\\nCan hypertension be cured?,Management vs cure distinction,hypertension management long-term,lifestyle changes for blood pressure,0.947,0.899,Medium\\nWhat is cholesterol?,LDL HDL definition,cholesterol types and cardiovascular risk,lipid panel interpretation,0.938,0.887,High\\nWhat foods lower blood pressure?,DASH diet items,DASH diet for hypertension,dietary approaches to stop hypertension,0.929,0.876,High\\nIs aspirin good for heart disease?,Antiplatelet therapy indications,aspirin antiplatelet cardiac prevention,cardiovascular risk and aspirin use,0.921,0.864,Medium\\n\`)">⬇ Download CSV</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Query</th><th>Topic</th><th>Sim Score 1</th><th>Sim Score 2</th><th>Quality</th></tr></thead>
+        <tbody>
+          <tr><td>What medications treat high blood pressure?</td><td>ACE inhibitors</td><td class="ok">0.984</td><td class="ok">0.961</td><td class="ok">High</td></tr>
+          <tr><td>Normal blood pressure range?</td><td>120/80 mmHg</td><td class="ok">0.971</td><td class="ok">0.944</td><td class="ok">High</td></tr>
+          <tr><td>How is diabetes diagnosed?</td><td>HbA1c / glucose</td><td class="ok">0.963</td><td class="ok">0.931</td><td class="ok">High</td></tr>
+          <tr><td>Can hypertension be cured?</td><td>Management</td><td class="ok">0.947</td><td class="warn">0.899</td><td class="warn">Medium</td></tr>
+          <tr><td>What foods lower blood pressure?</td><td>DASH diet</td><td class="ok">0.929</td><td class="ok">0.876</td><td class="ok">High</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="result-box"><div class="rlabel">✅ PIPELINE OUTPUT</div><div class="rvalue">Answer latency: ~850ms | Tokens used: ~1,200 | Context used: 4 chunks</div><div class="rdesc">The RAG system correctly retrieves and grounds its answer in 4 relevant chunks. Answer is accurate, citable, and reflects the knowledge base — not hallucinated from training data. The key metric: faithfulness score (answer is fully supported by retrieved context).</div></div>
+
+      <div class="insight"><div class="ititle">💡 PROMPT INJECTION DEFENCE</div><div class="itext">Always validate that the retrieved context is actually being used in the final answer (faithfulness metric). Hallucination in RAG occurs when the LLM ignores the context and answers from parametric memory. System prompt guardrails like "Answer ONLY using the context below. If you cannot find the answer, say 'I don't know'." dramatically reduce hallucination rates.</div></div>
+    </div>
+  `},
+
+  // ── 5: RAG EVALUATION ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">📊 RAG Evaluation Metrics <span class="pill pill-o">RAGAS Framework</span></div>
+      <div class="card-desc">Evaluating RAG is hard — "did the model answer correctly?" is not enough. RAGAS defines four independent axes of quality that together give a full picture of RAG system health. Each can be computed automatically using an LLM-as-judge approach.</div>
+
+      <div class="eval-grid">
+        <div class="eval-card"><div class="eval-icon">🎯</div><div class="eval-name" style="color:var(--violet)">Faithfulness</div><div class="eval-desc">Is every claim in the answer supported by retrieved context? Measures hallucination rate.</div><div class="eval-formula">claims_in_context / total_claims</div></div>
+        <div class="eval-card"><div class="eval-icon">🎯</div><div class="eval-name" style="color:var(--cyan)">Answer Relevancy</div><div class="eval-desc">Does the answer actually address the question asked? Penalises off-topic responses.</div><div class="eval-formula">avg cosine_sim(generated_Q, original_Q)</div></div>
+        <div class="eval-card"><div class="eval-icon">🔍</div><div class="eval-name" style="color:var(--green)">Context Precision</div><div class="eval-desc">Of the K retrieved chunks, how many are actually relevant to answer the question?</div><div class="eval-formula">relevant_retrieved / total_retrieved</div></div>
+        <div class="eval-card"><div class="eval-icon">📚</div><div class="eval-name" style="color:var(--gold)">Context Recall</div><div class="eval-desc">Were all the necessary pieces of information actually retrieved? Did we miss any?</div><div class="eval-formula">retrieved_needed / total_needed</div></div>
+      </div>
+
+      <div class="steps-label">🧪 RAGAS EVALUATION WALKTHROUGH</div>
+      <div class="step"><div class="snum">1</div><div class="sbody"><div class="st">Sample Evaluation</div><div class="sd">Q: "What medications treat high blood pressure?"</div><code class="sc">answer = "Lisinopril (ACE inhibitor) and amlodipine (CCB) are common treatments."
+context = ["ACE inhibitors like lisinopril...", "Calcium channel blockers..."]
+ground_truth = "ACE inhibitors, beta-blockers, and CCBs treat hypertension"</code></div></div>
+      <div class="step"><div class="snum">2</div><div class="sbody"><div class="st">Faithfulness Score</div><div class="sd">LLM-judge checks: claim 1 "Lisinopril is ACE inhibitor" ✅ in context. Claim 2 "amlodipine is CCB" ✅ in context. Score = 2/2 = 1.0</div><code class="sc">faithfulness = 1.0  // Perfect — no hallucination</code></div></div>
+      <div class="step"><div class="snum">3</div><div class="sbody"><div class="st">Answer Relevancy</div><div class="sd">Generate 3 questions from the answer, embed them, compare to original query embedding</div><code class="sc">gen_q1 = "What are ACE inhibitors used for?"  → cos_sim: 0.91
+gen_q2 = "What is amlodipine prescribed for?" → cos_sim: 0.87
+answer_relevancy = avg([0.91, 0.87]) = 0.89</code></div></div>
+      <div class="step"><div class="snum">4</div><div class="sbody"><div class="st">Context Precision (K=4 retrieved)</div><div class="sd">2 of 4 retrieved chunks were directly useful for this answer</div><code class="sc">context_precision = 2/4 = 0.50  // Room to improve retrieval</code></div></div>
+
+      <div class="tbl-label">📋 RAG EVALUATION DATASET <button class="dl-btn" onclick="dlCSV('rag_evaluation_dataset.csv',\`Question,Answer,Faithfulness,Answer_Relevancy,Context_Precision,Context_Recall,Avg_Score,Pass\\nWhat medications treat high blood pressure?,Lisinopril and amlodipine are common treatments,1.00,0.89,0.50,1.00,0.85,Pass\\nNormal blood pressure range?,Below 120/80 mmHg is normal,1.00,0.93,0.75,1.00,0.92,Pass\\nHow is diabetes diagnosed?,HbA1c above 6.5% or fasting glucose 126 mg/dL,0.95,0.91,1.00,0.90,0.94,Pass\\nCan hypertension be cured?,It can be managed but not cured,0.80,0.72,0.50,0.67,0.67,Fail\\nWhat foods lower blood pressure?,DASH diet: fruits vegetables low sodium,1.00,0.88,0.75,1.00,0.91,Pass\\nIs aspirin good for heart disease?,Reduces platelet aggregation in high-risk patients,0.85,0.79,0.50,0.80,0.74,Fail\\nWhat is a statin?,Drug that lowers LDL cholesterol,1.00,0.90,1.00,1.00,0.98,Pass\\n\`)">⬇ Download CSV</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Question</th><th>Faithful</th><th>Relevancy</th><th>Ctx Prec</th><th>Ctx Recall</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Medications for BP?</td><td class="ok">1.00</td><td class="ok">0.89</td><td class="warn">0.50</td><td class="ok">1.00</td><td class="ok">Pass</td></tr>
+          <tr><td>Normal BP range?</td><td class="ok">1.00</td><td class="ok">0.93</td><td class="ok">0.75</td><td class="ok">1.00</td><td class="ok">Pass</td></tr>
+          <tr><td>Diabetes diagnosis?</td><td class="ok">0.95</td><td class="ok">0.91</td><td class="ok">1.00</td><td class="ok">0.90</td><td class="ok">Pass</td></tr>
+          <tr><td>Can BP be cured?</td><td class="warn">0.80</td><td class="warn">0.72</td><td class="warn">0.50</td><td class="warn">0.67</td><td class="bad">Fail</td></tr>
+          <tr><td>Foods for BP?</td><td class="ok">1.00</td><td class="ok">0.88</td><td class="ok">0.75</td><td class="ok">1.00</td><td class="ok">Pass</td></tr>
+          <tr><td>Aspirin + heart?</td><td class="warn">0.85</td><td class="warn">0.79</td><td class="warn">0.50</td><td class="warn">0.80</td><td class="bad">Fail</td></tr>
+        </tbody>
+      </table></div>
+
+      <div style="margin-top:14px;margin-bottom:6px">
+        <div class="tbl-label">📈 OVERALL RAG SYSTEM SCORES</div>
+        <div class="metric-row"><div class="metric-name">Faithfulness</div><div class="metric-bar-wrap"><div class="metric-bar" style="background:var(--green);width:93%"></div></div><div class="metric-val">0.93</div></div>
+        <div class="metric-row"><div class="metric-name">Answer Relevancy</div><div class="metric-bar-wrap"><div class="metric-bar" style="background:var(--cyan);width:85%"></div></div><div class="metric-val">0.85</div></div>
+        <div class="metric-row"><div class="metric-name">Context Precision</div><div class="metric-bar-wrap"><div class="metric-bar" style="background:var(--violet);width:67%"></div></div><div class="metric-val">0.67</div></div>
+        <div class="metric-row"><div class="metric-name">Context Recall</div><div class="metric-bar-wrap"><div class="metric-bar" style="background:var(--gold);width:90%"></div></div><div class="metric-val">0.90</div></div>
+      </div>
+
+      <div class="insight"><div class="ititle">💡 DIAGNOSING RAG FAILURES FROM SCORES</div><div class="itext">Low Context Precision → too many irrelevant chunks retrieved → reduce K or add re-ranking. Low Context Recall → relevant chunks missing → better chunking or denser retrieval. Low Faithfulness → LLM ignoring context → stronger system prompt guardrails. Low Answer Relevancy → question misunderstood → add query rewriting step.</div></div>
+    </div>
+  `},
+
+  // ── 6: ADVANCED RAG ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">🚀 Advanced RAG Techniques <span class="pill pill-c">Beyond Naive RAG</span></div>
+      <div class="card-desc">Naive RAG (embed → retrieve → generate) has well-known limitations. Advanced RAG techniques address specific failure modes. Each adds a step or changes a component to improve retrieval quality, context relevance, or answer accuracy.</div>
+
+      <div class="adv-rag-item">
+        <span class="adv-tag" style="background:rgba(139,92,246,.15);color:var(--violet);border:1px solid rgba(139,92,246,.3)">QUERY REWRITING</span>
+        <div class="adv-name">HyDE — Hypothetical Document Embeddings</div>
+        <div class="adv-desc">Instead of embedding the raw user query, ask the LLM to first generate a hypothetical answer, then embed that. Hypothetical answers are closer in embedding space to real relevant documents — significantly improving retrieval accuracy for complex questions.</div>
+        <div class="pipe-code" style="margin-top:8px">user_query = <span class="str">"What medications treat hypertension?"</span>
+hypothetical_doc = llm(<span class="str">"Write a 2-sentence answer: "</span> + user_query)
+<span class="cmt"># → "Common medications for hypertension include ACE inhibitors...</span>
+<span class="cmt">#    Beta-blockers like metoprolol are also widely prescribed."</span>
+query_vector = <span class="fn">embed</span>(hypothetical_doc)  <span class="cmt"># Embed the hypothesis, not the question!</span>
+retrieved = vector_store.<span class="fn">similarity_search</span>(query_vector, k=4)</div>
+      </div>
+
+      <div class="adv-rag-item">
+        <span class="adv-tag" style="background:rgba(34,211,165,.1);color:var(--green);border:1px solid rgba(34,211,165,.25)">MULTI-STAGE RETRIEVAL</span>
+        <div class="adv-name">Re-Ranking with Cross-Encoders</div>
+        <div class="adv-desc">Bi-encoders (used for initial retrieval) are fast but approximate. Cross-encoders evaluate (query, document) pairs jointly — much more accurate but slow. Solution: retrieve Top-50 with bi-encoder, then re-rank with cross-encoder to get final Top-4. Best of both worlds.</div>
+        <div class="pipe-code" style="margin-top:8px">stage_1 = bi_encoder.<span class="fn">retrieve</span>(query, k=<span class="num">50</span>)  <span class="cmt"># Fast, approximate</span>
+stage_2 = cross_encoder.<span class="fn">rerank</span>(query, stage_1, k=<span class="num">4</span>) <span class="cmt"># Slow, accurate</span>
+<span class="cmt"># Models: Cohere Rerank, BGE-Reranker, ms-marco-MiniLM</span></div>
+      </div>
+
+      <div class="adv-rag-item">
+        <span class="adv-tag" style="background:rgba(56,189,248,.1);color:var(--cyan);border:1px solid rgba(56,189,248,.25)">HYBRID RETRIEVAL</span>
+        <div class="adv-name">Sparse (BM25) + Dense (Embedding) Fusion</div>
+        <div class="adv-desc">Dense retrieval is great for semantic similarity. Sparse retrieval (BM25/TF-IDF) is great for exact keyword matching (product codes, names, IDs). Hybrid RAG combines both using Reciprocal Rank Fusion (RRF) — outperforms either alone by 5–15% on most benchmarks.</div>
+        <div class="pipe-code" style="margin-top:8px">dense_results  = vector_store.<span class="fn">search</span>(query_vector, k=<span class="num">20</span>)
+sparse_results = bm25_index.<span class="fn">search</span>(query_tokens,  k=<span class="num">20</span>)
+<span class="cmt"># Reciprocal Rank Fusion:</span>
+rrf_score(doc) = <span class="sym">Σ 1/(rank_dense+60) + 1/(rank_sparse+60)</span>
+final = <span class="fn">sorted</span>(all_docs, key=rrf_score, reverse=<span class="kw">True</span>)[:<span class="num">4</span>]</div>
+      </div>
+
+      <div class="adv-rag-item">
+        <span class="adv-tag" style="background:rgba(244,185,66,.1);color:var(--gold);border:1px solid rgba(244,185,66,.25)">SELF-CORRECTION</span>
+        <div class="adv-name">CRAG — Corrective RAG</div>
+        <div class="adv-desc">CRAG adds a retrieval evaluator that grades retrieved documents. If all retrieved docs score below a confidence threshold, CRAG falls back to web search. If some docs are irrelevant, CRAG decomposes the query and refines retrieval before generating.</div>
+        <div class="pipe-code" style="margin-top:8px">docs = retriever.<span class="fn">retrieve</span>(query)
+scores = evaluator.<span class="fn">grade</span>(query, docs)  <span class="cmt"># LLM relevance scores</span>
+<span class="kw">if</span> max(scores) < <span class="num">0.5</span>:  <span class="cmt"># All docs are irrelevant</span>
+    docs = web_search.<span class="fn">search</span>(query)   <span class="cmt"># Fallback to web</span>
+<span class="kw">elif</span> any(s < <span class="num">0.5</span> <span class="kw">for</span> s <span class="kw">in</span> scores):  <span class="cmt"># Mixed quality</span>
+    docs = [d <span class="kw">for</span> d,s <span class="kw">in</span> zip(docs,scores) <span class="kw">if</span> s >= <span class="num">0.5</span>]</div>
+      </div>
+
+      <div class="adv-rag-item">
+        <span class="adv-tag" style="background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)">AGENTIC RAG</span>
+        <div class="adv-name">Self-RAG — Adaptive Retrieval with Reflection Tokens</div>
+        <div class="adv-desc">Self-RAG trains the LLM to generate special reflection tokens — [Retrieve], [ISREL], [ISSUP], [ISUSE] — to decide when to retrieve, whether retrieved docs are relevant, and whether to use them. The model adaptively chooses when retrieval helps and when it doesn't need it.</div>
+        <div class="pipe-code" style="margin-top:8px"><span class="cmt"># Self-RAG generates tokens like:</span>
+<span class="str">"[Retrieve]"</span>              <span class="cmt">→ triggers retrieval</span>
+<span class="str">"[ISREL] relevant"</span>        <span class="cmt">→ retrieved doc is useful</span>
+<span class="str">"[ISREL] irrelevant"</span>      <span class="cmt">→ skip this retrieved doc</span>
+<span class="str">"[ISSUP] fully supported"</span>  <span class="cmt">→ answer is grounded</span>
+<span class="str">"[ISUSE] 5"</span>               <span class="cmt">→ utility score 1-5</span></div>
+      </div>
+
+      <div class="tbl-label">📋 ADVANCED RAG TECHNIQUES COMPARISON <button class="dl-btn" onclick="dlCSV('advanced_rag_techniques.csv',\`Technique,Addresses,Improvement,Complexity,When to Use\\nHyDE,Poor query embedding,+10-20% recall,Low,Complex questions with abstract queries\\nRe-Ranking,Irrelevant top-K results,+8-15% precision,Medium,When initial retrieval precision is low\\nHybrid RAG,Keyword vs semantic gap,+5-15% overall,Medium,Domains with IDs product codes names\\nCRAG,Stale/wrong knowledge base,Prevents bad answers,High,When KB may be incomplete\\nSelf-RAG,Unnecessary retrieval overhead,Adaptive accuracy,Very High,Latency-sensitive with mixed query types\\nParent-Child,Context fragmentation,+10-12% faithfulness,Medium,Long-form documents with dense info\\n\`)">⬇ Download CSV</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Technique</th><th>Addresses</th><th>Improvement</th><th>Complexity</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">HyDE</td><td>Poor query embedding</td><td class="ok">+10–20% recall</td><td class="ok">Low</td></tr>
+          <tr><td class="hl">Re-Ranking</td><td>Irrelevant top-K</td><td class="ok">+8–15% precision</td><td class="warn">Medium</td></tr>
+          <tr><td class="hl">Hybrid RAG</td><td>Keyword vs semantic</td><td class="ok">+5–15% overall</td><td class="warn">Medium</td></tr>
+          <tr><td class="hl">CRAG</td><td>Stale knowledge base</td><td class="ok">Prevents bad answers</td><td class="bad">High</td></tr>
+          <tr><td class="hl">Self-RAG</td><td>Unnecessary retrieval</td><td class="ok">Adaptive accuracy</td><td class="bad">Very High</td></tr>
+          <tr><td class="hl">Parent-Child</td><td>Context fragmentation</td><td class="ok">+10–12% faithfulness</td><td class="warn">Medium</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  `},
+
+  // ── 7: FINE-TUNING ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">🧬 Fine-Tuning Deep Dive <span class="pill pill-g">LoRA · QLoRA · RLHF</span></div>
+      <div class="card-desc">Fine-tuning permanently adjusts model weights to specialise behaviour — tone, style, domain expertise, or task format. Unlike RAG, there's no retrieval step. The knowledge is baked into the model's parameters. Modern fine-tuning uses parameter-efficient methods that train only a tiny fraction of weights.</div>
+
+      <div class="concept-box">
+        <div class="concept-label">🔬 FINE-TUNING OBJECTIVE</div>
+        <div class="concept-body">
+<span class="cmt">// Standard cross-entropy loss on training examples:</span>
+<span class="sym">L(θ)</span> = <span class="kw">−(1/N) · Σ log P(yᵢ | xᵢ ; θ)</span>
+
+<span class="cmt">// LoRA: only train low-rank matrices A and B, not full W</span>
+<span class="sym">W' = W + ΔW</span>  <span class="cmt">// W is frozen pre-trained weight</span>
+<span class="sym">ΔW = B · A</span>   <span class="cmt">// B ∈ R^(d×r), A ∈ R^(r×k), rank r << d,k</span>
+<span class="cmt">// r=16 trains 0.1% of params vs 100% full fine-tune</span>
+        </div>
+      </div>
+
+      <div class="ft-stage">
+        <div class="ft-stage-head"><span class="ft-badge" style="background:rgba(56,189,248,.12);color:var(--cyan);border:1px solid rgba(56,189,248,.28)">STAGE 1</span><div class="ft-title">Data Preparation</div></div>
+        <div class="ft-desc">Prepare instruction-following pairs in JSONL format. Quality &gt; quantity — 1,000 high-quality examples often beats 100,000 noisy ones. Include diverse edge cases. Format: {"prompt": "...", "completion": "..."} or chat format with system/user/assistant turns.</div>
+        <div class="pipe-code" style="margin-top:8px">
+<span class="cmt">// JSONL fine-tuning format (OpenAI / Hugging Face)</span>
+{<span class="str">"messages"</span>: [
+  {<span class="str">"role"</span>: <span class="str">"system"</span>,    <span class="str">"content"</span>: <span class="str">"You are a medical assistant."</span>},
+  {<span class="str">"role"</span>: <span class="str">"user"</span>,      <span class="str">"content"</span>: <span class="str">"What is hypertension?"</span>},
+  {<span class="str">"role"</span>: <span class="str">"assistant"</span>, <span class="str">"content"</span>: <span class="str">"Hypertension is persistently elevated..."</span>}
+]}
+</div>
+      </div>
+
+      <div class="ft-stage">
+        <div class="ft-stage-head"><span class="ft-badge" style="background:rgba(139,92,246,.12);color:var(--violet);border:1px solid rgba(139,92,246,.28)">STAGE 2</span><div class="ft-title">LoRA Configuration</div></div>
+        <div class="ft-desc">Configure LoRA hyperparameters. Rank r controls capacity (4–64 typical). Alpha scales the LoRA update. Target attention matrices Q and V (sometimes all layers). Dropout prevents overfitting.</div>
+        <div class="pipe-code" style="margin-top:8px">
+<span class="kw">from</span> peft <span class="kw">import</span> LoraConfig, get_peft_model
+config = <span class="fn">LoraConfig</span>(
+  r=<span class="num">16</span>,            <span class="cmt"># rank — low = fewer params, less capacity</span>
+  lora_alpha=<span class="num">32</span>,  <span class="cmt"># scaling factor (alpha/r = 2x effective LR)</span>
+  target_modules=[<span class="str">"q_proj"</span>, <span class="str">"v_proj"</span>],
+  lora_dropout=<span class="num">0.05</span>,
+  bias=<span class="str">"none"</span>,
+  task_type=<span class="str">"CAUSAL_LM"</span>
+)
+model = <span class="fn">get_peft_model</span>(base_model, config)
+model.<span class="fn">print_trainable_parameters</span>()
+<span class="cmt"># → trainable params: 4,194,304 (0.32% of 13B params)</span>
+</div>
+      </div>
+
+      <div class="ft-stage">
+        <div class="ft-stage-head"><span class="ft-badge" style="background:rgba(34,211,165,.1);color:var(--green);border:1px solid rgba(34,211,165,.25)">STAGE 3</span><div class="ft-title">Training Loop</div></div>
+        <div class="ft-desc">Train with SFTTrainer (Supervised Fine-Tuning). Key hyperparameters: learning rate 2e-4 (LoRA), batch size 4–16, 1–3 epochs. Monitor training loss convergence and eval loss for early stopping.</div>
+        <div class="pipe-code" style="margin-top:8px">
+trainer = <span class="fn">SFTTrainer</span>(
+  model=model, train_dataset=dataset,
+  args=<span class="fn">TrainingArguments</span>(
+    num_train_epochs=<span class="num">3</span>,
+    per_device_train_batch_size=<span class="num">4</span>,
+    learning_rate=<span class="num">2e-4</span>,
+    warmup_steps=<span class="num">100</span>,
+    fp16=<span class="kw">True</span>,           <span class="cmt"># half precision for memory</span>
+    output_dir=<span class="str">"./ft-model"</span>
+  )
+)
+trainer.<span class="fn">train</span>()  <span class="cmt"># Loss: 2.31→0.94→0.76 across epochs</span>
+</div>
+      </div>
+
+      <div class="tbl-label">📋 FINE-TUNING TRAINING LOG (SAMPLE DATA) <button class="dl-btn" onclick="dlCSV('finetuning_training_log.csv',\`Epoch,Step,Train_Loss,Eval_Loss,Learning_Rate,Perplexity,Notes\\n1,50,2.310,2.289,0.000200,10.07,Warmup phase\\n1,100,1.876,1.834,0.000198,6.26,Learning\\n1,150,1.543,1.498,0.000196,4.47,Converging\\n1,200,1.287,1.241,0.000194,3.46,Good progress\\n2,250,1.102,1.089,0.000189,2.97,Strong learning\\n2,300,0.978,0.961,0.000181,2.61,Stabilising\\n2,350,0.923,0.912,0.000170,2.49,Good\\n3,400,0.889,0.881,0.000155,2.41,Near convergence\\n3,450,0.871,0.876,0.000135,2.40,Watch for overfit\\n3,500,0.858,0.882,0.000110,2.42,Slight overfit signal — stop here\\n\`)">⬇ Download CSV</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Epoch</th><th>Step</th><th>Train Loss</th><th>Eval Loss</th><th>Perplexity</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>50</td><td>2.310</td><td>2.289</td><td class="warn">10.07</td></tr>
+          <tr><td>1</td><td>150</td><td>1.543</td><td>1.498</td><td class="warn">4.47</td></tr>
+          <tr><td>2</td><td>300</td><td>0.978</td><td>0.961</td><td class="ok">2.61</td></tr>
+          <tr><td>3</td><td>400</td><td>0.889</td><td>0.881</td><td class="ok">2.41</td></tr>
+          <tr><td>3</td><td>500</td><td class="ok">0.858</td><td class="warn">0.882</td><td class="warn">2.42 ⚠</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="result-box"><div class="rlabel">✅ FINE-TUNING RESULT</div><div class="rvalue">Eval Loss: 0.881 | Perplexity: 2.41 | Trainable Params: 0.32%</div><div class="rdesc">Training loss dropped from 2.31 to 0.858 over 3 epochs. The slight divergence between train (0.858) and eval (0.882) at step 500 signals early overfitting — best checkpoint is at step 450. The model learned the medical tone and format using only 0.32% of parameters — LoRA efficiency at work.</div></div>
+
+      <div class="insight"><div class="ititle">💡 QLoRA: Fine-Tune 70B Models on a Single GPU</div><div class="itext">QLoRA (Quantised LoRA) loads the base model in 4-bit NF4 quantisation (~4GB for 7B model), then trains LoRA adapters in bfloat16. A 7B model fine-tunes on a single 16GB RTX 4080. A 13B model fits on an A100 40GB. This democratised fine-tuning — you no longer need a multi-GPU cluster.</div></div>
+    </div>
+  `},
+
+  // ── 8: DECISION MATRIX ──
+  {render:()=>`
+    <div class="card">
+      <div class="card-title">⚖️ RAG vs Fine-Tuning: Decision Matrix <span class="pill pill-o">When to Use What</span></div>
+      <div class="card-desc">The choice between RAG and Fine-Tuning (or both!) depends on your use case. This matrix maps common AI product scenarios to the right approach based on six key decision criteria.</div>
+
+      <div class="tbl-label">📋 DECISION MATRIX — DOWNLOADABLE <button class="dl-btn" onclick="dlCSV('rag_vs_finetuning_matrix.csv',\`Criteria,RAG,Fine-Tuning,Both (Recommended),Notes\\nKnowledge currency,✅ Live / real-time updates,❌ Frozen at training time,✅ FT style + RAG facts,Use RAG if knowledge changes monthly\\nDomain expertise,⚠ Depends on KB quality,✅ Deep expertise in weights,✅ Best of both,FT for tone/format RAG for facts\\nHallucination control,✅ Grounded in sources,⚠ Can hallucinate,✅ Lowest hallucination,RAG allows source citation\\nSetup cost,Medium (infra + indexing),High (GPU + data prep),High,RAG needs vector DB infrastructure\\nLatency,+200-500ms (retrieval),No retrieval overhead,+200-500ms,RAG adds retrieval latency\\nTransparency,✅ Citable sources,❌ Black box knowledge,✅ Cited + polished,RAG wins for regulated industries\\nData volume needed,No training data needed,500-10000 examples,Both needed,RAG is data-efficient\\nPersonalisation,⚠ Generic style,✅ Custom persona/tone,✅ Personalised + grounded,FT wins for brand voice\\nScalability,Add docs without retraining,Retrain for new knowledge,Add docs easily,RAG scales knowledge easily\\nCost at scale,Vector DB + API costs,Inference only (cheaper),Both costs,FT cheaper at high query volume\\n\`)">⬇ Download CSV</button></div>
+
+      <div class="matrix-table">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Criteria</th><th>RAG</th><th>Fine-Tuning</th><th>Both</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">Knowledge currency</td><td class="ok">✅ Live updates</td><td class="bad">❌ Frozen</td><td class="ok">✅</td></tr>
+          <tr><td class="hl">Domain expertise</td><td class="warn">⚠ KB quality</td><td class="ok">✅ In weights</td><td class="ok">✅ Best</td></tr>
+          <tr><td class="hl">Hallucination control</td><td class="ok">✅ Citable</td><td class="warn">⚠ Possible</td><td class="ok">✅ Lowest</td></tr>
+          <tr><td class="hl">Setup cost</td><td class="warn">Medium</td><td class="bad">High</td><td class="bad">High</td></tr>
+          <tr><td class="hl">Latency</td><td class="warn">+200–500ms</td><td class="ok">No retrieval</td><td class="warn">+200ms</td></tr>
+          <tr><td class="hl">Transparency</td><td class="ok">✅ Sources</td><td class="bad">❌ Black box</td><td class="ok">✅ Cited</td></tr>
+          <tr><td class="hl">Training data</td><td class="ok">✅ None needed</td><td class="warn">500–10K ex</td><td class="warn">Both</td></tr>
+          <tr><td class="hl">Brand voice/style</td><td class="warn">⚠ Generic</td><td class="ok">✅ Custom tone</td><td class="ok">✅ Personalised</td></tr>
+          <tr><td class="hl">Scale knowledge</td><td class="ok">✅ Add docs</td><td class="bad">Retrain</td><td class="ok">✅ Easily</td></tr>
+        </tbody>
+      </table></div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="tbl-label">🎯 SCENARIO RECOMMENDATIONS</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Use Case</th><th>Recommended</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Customer support chatbot (FAQ updates weekly)</td><td class="ok">RAG</td><td>Knowledge changes frequently</td></tr>
+            <tr><td>Medical report summarisation</td><td class="ok">Both</td><td>FT for clinical tone, RAG for patient data</td></tr>
+            <tr><td>Legal contract analysis</td><td class="ok">RAG</td><td>Must cite sources, regulations change</td></tr>
+            <tr><td>Code generation (company style)</td><td class="ok">Fine-Tune</td><td>Style/patterns are stable</td></tr>
+            <tr><td>Personalised tutor (curriculum fixed)</td><td class="ok">Both</td><td>FT for pedagogy, RAG for content</td></tr>
+            <tr><td>Financial news analyst</td><td class="ok">RAG</td><td>Real-time data is critical</td></tr>
+            <tr><td>Sentiment classifier (domain-specific)</td><td class="ok">Fine-Tune</td><td>Pure classification, no retrieval needed</td></tr>
+            <tr><td>Enterprise knowledge base (10K+ docs)</td><td class="ok">RAG</td><td>Scalable, no retraining per update</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="result-box"><div class="rlabel">✅ GOLDEN RULE</div><div class="rvalue">RAG for facts. Fine-Tuning for behaviour. Use both for production AI.</div><div class="rdesc">Most enterprise AI systems benefit from both: Fine-tune the base model on your domain's style, tone, and task format — then layer RAG on top to ground it in your live knowledge base. Anthropic's Claude with tool use (RAG) and system prompts (behaviour tuning) is the most common production pattern.</div></div>
+
+      <div class="insight"><div class="ititle">💡 THE 2025 CONSENSUS</div><div class="itext">As of 2025, Anthropic, OpenAI, and Google's guidance converges: start with RAG (faster, cheaper, more transparent). Add fine-tuning only if you need consistent style/format changes that can't be achieved with prompting. Use RLHF/DPO for alignment and preference tuning. Invest in evaluation (RAGAS, LLM-as-judge) from day one — you can't improve what you don't measure.</div></div>
+    </div>
+  `},
+];
+
+// ── RENDER TAB ──
+function showTab(idx){
+  document.querySelectorAll('.mtab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.getElementById('content').innerHTML = tabs[idx].render();
+  document.getElementById('content').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+showTab(0);
+
+// ── PWA ICON ──
+(function(){
+  const c=document.createElement('canvas');
+  c.width=c.height=512;
+  const ctx=c.getContext('2d');
+  const g=ctx.createRadialGradient(256,256,0,256,256,280);
+  g.addColorStop(0,'#1a1040');g.addColorStop(1,'#080d18');
+  ctx.fillStyle=g;ctx.fillRect(0,0,512,512);
+  // outer ring
+  ctx.strokeStyle='#8b5cf6';ctx.lineWidth=14;
+  ctx.beginPath();ctx.arc(256,256,230,0,Math.PI*2);ctx.stroke();
+  // inner ring
+  ctx.strokeStyle='#38bdf8';ctx.lineWidth=6;
+  ctx.beginPath();ctx.arc(256,256,200,0,Math.PI*2);ctx.stroke();
+  // RAG text
+  ctx.font='bold 130px serif';ctx.fillStyle='#8b5cf6';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('RAG',256,220);
+  // subtext
+  ctx.font='bold 52px sans-serif';ctx.fillStyle='#38bdf8';
+  ctx.fillText('FINE-TUNE',256,310);
+  // dots
+  [[90,100,'#8b5cf6'],[422,100,'#38bdf8'],[90,412,'#22d3a5'],[422,412,'#f4b942']].forEach(([x,y,col])=>{
+    ctx.beginPath();ctx.arc(x,y,16,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+  });
+  const url=c.toDataURL('image/png');
+  document.getElementById('apple-icon').href=url;
+  document.head.insertAdjacentHTML('beforeend',`<link rel="icon" type="image/png" href="${url}">`);
+
+  const mf={name:'RAG & Fine-Tuning — AI Education',short_name:'RAG AI Edu',
+    description:'Episode 3 — RAG architecture, embeddings, vector search, fine-tuning, evaluation',
+    start_url:'.',display:'standalone',background_color:'#080d18',theme_color:'#080d18',
+    icons:[{src:url,sizes:'512x512',type:'image/png'}]};
+  document.getElementById('manifest-link').href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
+
+  const sw=`const CACHE='rag-edu-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE)));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))))`;
+  if('serviceWorker' in navigator)navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})));
+})();
+</script>
+</body>
+</html>
