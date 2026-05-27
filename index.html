@@ -464,6 +464,143 @@ const tabs=[
         </div>
       </div>
 
+      <!-- SVG BLOCK DIAGRAM -->
+      <div style="margin-bottom:14px">
+        <div class="concept-label" style="color:var(--gold);margin-bottom:10px">📐 RAG BLOCK DIAGRAM — DATA FLOW</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <svg viewBox="0 0 720 420" width="100%" style="min-width:320px;max-width:720px;display:block;font-family:'DM Sans',sans-serif" xmlns="http://www.w3.org/2000/svg">
+          <!-- BG -->
+          <rect width="720" height="420" fill="#080f1e" rx="12"/>
+
+          <!-- ── PHASE LABELS ── -->
+          <rect x="10" y="10" width="340" height="30" rx="6" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.35)" stroke-width="1"/>
+          <text x="180" y="29" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600" letter-spacing="1">⬇  INDEX PHASE  (Offline — done once)</text>
+
+          <rect x="370" y="10" width="340" height="30" rx="6" fill="rgba(56,189,248,0.1)" stroke="rgba(56,189,248,0.3)" stroke-width="1"/>
+          <text x="540" y="29" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="600" letter-spacing="1">⬇  QUERY PHASE  (Online — per request)</text>
+
+          <!-- ════ INDEX PHASE NODES ════ -->
+          <!-- 1. Documents -->
+          <rect x="14" y="58" width="88" height="70" rx="8" fill="#0d1526" stroke="rgba(139,92,246,0.5)" stroke-width="1.5"/>
+          <text x="58" y="82" text-anchor="middle" font-size="18">📄</text>
+          <text x="58" y="98" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600">Source Docs</text>
+          <text x="58" y="112" text-anchor="middle" fill="#6b7fa0" font-size="9">PDF · Web · DB</text>
+
+          <!-- arrow 1→2 -->
+          <line x1="103" y1="93" x2="122" y2="93" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arr-v)"/>
+
+          <!-- 2. Chunker -->
+          <rect x="123" y="58" width="88" height="70" rx="8" fill="#0d1526" stroke="rgba(139,92,246,0.5)" stroke-width="1.5"/>
+          <text x="167" y="82" text-anchor="middle" font-size="18">✂️</text>
+          <text x="167" y="98" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600">Chunker</text>
+          <text x="167" y="112" text-anchor="middle" fill="#6b7fa0" font-size="9">512 tok overlap</text>
+
+          <!-- arrow 2→3 -->
+          <line x1="212" y1="93" x2="231" y2="93" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arr-v)"/>
+
+          <!-- 3. Embedder -->
+          <rect x="232" y="58" width="88" height="70" rx="8" fill="#0d1526" stroke="rgba(139,92,246,0.5)" stroke-width="1.5"/>
+          <text x="276" y="82" text-anchor="middle" font-size="18">🔢</text>
+          <text x="276" y="98" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600">Embedder</text>
+          <text x="276" y="112" text-anchor="middle" fill="#6b7fa0" font-size="9">text → vector</text>
+
+          <!-- arrow 3→4 curved down into Vector Store -->
+          <path d="M276 128 Q276 170 310 185" stroke="#8b5cf6" stroke-width="1.5" fill="none" marker-end="url(#arr-v)"/>
+
+          <!-- 4. Vector Store (centre-bottom of index phase) -->
+          <rect x="150" y="175" width="160" height="72" rx="10" fill="#0d1526" stroke="#8b5cf6" stroke-width="2"/>
+          <text x="230" y="201" text-anchor="middle" font-size="18">🗄️</text>
+          <text x="230" y="219" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700">Vector Store</text>
+          <text x="230" y="234" text-anchor="middle" fill="#6b7fa0" font-size="9">FAISS · Chroma · Pinecone</text>
+
+          <!-- ════ QUERY PHASE NODES ════ -->
+          <!-- 5. User Query -->
+          <rect x="374" y="58" width="88" height="70" rx="8" fill="#0d1526" stroke="rgba(56,189,248,0.5)" stroke-width="1.5"/>
+          <text x="418" y="82" text-anchor="middle" font-size="18">💬</text>
+          <text x="418" y="98" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600">User Query</text>
+          <text x="418" y="112" text-anchor="middle" fill="#6b7fa0" font-size="9">"What is BP med?"</text>
+
+          <!-- arrow 5→6 -->
+          <line x1="463" y1="93" x2="481" y2="93" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-c)"/>
+
+          <!-- 6. Embed Query -->
+          <rect x="482" y="58" width="88" height="70" rx="8" fill="#0d1526" stroke="rgba(56,189,248,0.5)" stroke-width="1.5"/>
+          <text x="526" y="82" text-anchor="middle" font-size="18">🔢</text>
+          <text x="526" y="98" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600">Embed Query</text>
+          <text x="526" y="112" text-anchor="middle" fill="#6b7fa0" font-size="9">same model</text>
+
+          <!-- arrow 6 → Vector Store via curved path -->
+          <path d="M526 128 Q526 160 430 185" stroke="#38bdf8" stroke-width="1.5" fill="none" stroke-dasharray="4 3" marker-end="url(#arr-c)"/>
+          <text x="490" y="168" text-anchor="middle" fill="#38bdf8" font-size="9" font-style="italic">cosine search</text>
+
+          <!-- arrow Vector Store → Retriever  -->
+          <path d="M310 211 Q360 211 374 250" stroke="#22d3a5" stroke-width="1.5" fill="none" marker-end="url(#arr-g)"/>
+
+          <!-- 7. Retriever / Top-K chunks -->
+          <rect x="374" y="250" width="110" height="72" rx="10" fill="#0d1526" stroke="#22d3a5" stroke-width="2"/>
+          <text x="429" y="276" text-anchor="middle" font-size="18">🔍</text>
+          <text x="429" y="294" text-anchor="middle" fill="#22d3a5" font-size="11" font-weight="700">Retriever</text>
+          <text x="429" y="309" text-anchor="middle" fill="#6b7fa0" font-size="9">Top-K chunks</text>
+
+          <!-- arrow 7→8 -->
+          <line x1="485" y1="286" x2="505" y2="286" stroke="#22d3a5" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+          <!-- 8. Prompt Builder -->
+          <rect x="506" y="250" width="100" height="72" rx="10" fill="#0d1526" stroke="rgba(244,185,66,0.5)" stroke-width="1.5"/>
+          <text x="556" y="276" text-anchor="middle" font-size="18">📝</text>
+          <text x="556" y="294" text-anchor="middle" fill="#f4b942" font-size="10" font-weight="700">Prompt</text>
+          <text x="556" y="308" text-anchor="middle" fill="#6b7fa0" font-size="9">context + query</text>
+
+          <!-- arrow 8→LLM -->
+          <line x1="606" y1="286" x2="622" y2="286" stroke="#f4b942" stroke-width="1.5" marker-end="url(#arr-gold)"/>
+
+          <!-- 9. LLM -->
+          <rect x="623" y="250" width="84" height="72" rx="10" fill="#0d1526" stroke="rgba(244,185,66,0.7)" stroke-width="2"/>
+          <text x="665" y="276" text-anchor="middle" font-size="18">🤖</text>
+          <text x="665" y="294" text-anchor="middle" fill="#f4b942" font-size="11" font-weight="700">LLM</text>
+          <text x="665" y="308" text-anchor="middle" fill="#6b7fa0" font-size="9">GPT/Claude/Llama</text>
+
+          <!-- arrow LLM → Answer -->
+          <line x1="665" y1="322" x2="665" y2="345" stroke="#f4b942" stroke-width="1.5" marker-end="url(#arr-gold)"/>
+
+          <!-- 10. Answer -->
+          <rect x="580" y="346" width="168" height="52" rx="10" fill="rgba(244,185,66,0.08)" stroke="rgba(244,185,66,0.5)" stroke-width="1.5"/>
+          <text x="664" y="369" text-anchor="middle" fill="#f4b942" font-size="11" font-weight="700">✅ Grounded Answer</text>
+          <text x="664" y="386" text-anchor="middle" fill="#6b7fa0" font-size="9">Cited · Accurate · Up-to-date</text>
+
+          <!-- User query also feeds prompt builder (dotted) -->
+          <path d="M418 128 Q418 230 506 270" stroke="rgba(56,189,248,0.4)" stroke-width="1.2" fill="none" stroke-dasharray="3 3" marker-end="url(#arr-c)"/>
+
+          <!-- Divider line -->
+          <line x1="362" y1="44" x2="362" y2="410" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="5 4"/>
+
+          <!-- ARROW MARKERS -->
+          <defs>
+            <marker id="arr-v" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8b5cf6"/>
+            </marker>
+            <marker id="arr-c" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#38bdf8"/>
+            </marker>
+            <marker id="arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#22d3a5"/>
+            </marker>
+            <marker id="arr-gold" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#f4b942"/>
+            </marker>
+          </defs>
+
+          <!-- Legend -->
+          <rect x="14" y="370" width="330" height="40" rx="6" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <circle cx="30" cy="390" r="4" fill="#8b5cf6"/><text x="38" y="394" fill="#a78bfa" font-size="9">Index Phase</text>
+          <circle cx="100" cy="390" r="4" fill="#38bdf8"/><text x="108" y="394" fill="#38bdf8" font-size="9">Query Embed</text>
+          <circle cx="175" cy="390" r="4" fill="#22d3a5"/><text x="183" y="394" fill="#22d3a5" font-size="9">Retrieval</text>
+          <circle cx="235" cy="390" r="4" fill="#f4b942"/><text x="243" y="394" fill="#f4b942" font-size="9">Generation</text>
+          <line x1="290" y1="390" x2="308" y2="390" stroke="#6b7fa0" stroke-width="1.2" stroke-dasharray="3 2"/><text x="312" y="394" fill="#6b7fa0" font-size="9">Passthrough</text>
+        </svg>
+        </div>
+      </div>
+
       <div class="grid3">
         <div class="g-item"><div class="g-icon">📚</div><div class="g-name" style="color:var(--violet)">Knowledge Base</div><div class="g-desc">Any corpus: docs, PDFs, wikis, SQL — the model's external memory</div></div>
         <div class="g-item"><div class="g-icon">🔮</div><div class="g-name" style="color:var(--cyan)">Retriever</div><div class="g-desc">Dense (embeddings), Sparse (BM25), or Hybrid — fetches relevant chunks</div></div>
@@ -599,9 +736,13 @@ cos(Q,D1) = 0.92 / (0.990 × 0.944) = 0.92/0.935 = <b>0.984</b> ✅ Very High</c
       <div class="step"><div class="snum">3</div><div class="sbody"><div class="st">Compute Cosine Similarity: Q · D2 (pasta)</div><code class="sc">Dot = (0.8×0.1)+(0.5×0.2)+(0.3×0.9) = 0.08+0.10+0.27 = 0.45
 ||D2|| = √(0.01+0.04+0.81) = √0.86 = 0.927
 cos(Q,D2) = 0.45 / (0.990 × 0.927) = 0.45/0.918 = <b>0.490</b> ❌ Low — correctly excluded</code></div></div>
-      <div class="step"><div class="snum">4</div><div class="sbody"><div class="st">Rank by similarity — retrieve Top-K=2</div><code class="sc">D1: 0.984  ← RETRIEVED ✅
-D3: 0.961  ← RETRIEVED ✅
-D2: 0.490  ← NOT retrieved ✅ (pasta correctly excluded)</code></div></div>
+      <div class="step"><div class="snum">3b</div><div class="sbody"><div class="st">Compute Cosine Similarity: Q · D3 (antihypertensive)</div><code class="sc">Dot = (0.8×0.6)+(0.5×0.7)+(0.3×0.1) = 0.48+0.35+0.03 = 0.86
+||Q||  = √(0.64+0.25+0.09) = √0.98 = 0.990
+||D3|| = √(0.36+0.49+0.01) = √0.86 = 0.927
+cos(Q,D3) = 0.86 / (0.990 × 0.927) = 0.86/0.918 = <b>0.961</b> ✅ High — retrieved</code></div></div>
+      <div class="step"><div class="snum">4</div><div class="sbody"><div class="st">Rank all 3 by similarity — retrieve Top-K=2</div><code class="sc">D1: cos(Q,D1) = 0.984  ← RETRIEVED ✅  (ACE inhibitors — most relevant)
+D3: cos(Q,D3) = 0.961  ← RETRIEVED ✅  (Antihypertensive classes — relevant)
+D2: cos(Q,D2) = 0.490  ← NOT retrieved ✅ (Pasta recipe — correctly excluded)</code></div></div>
 
       <div class="cosine-grid">
         <div class="cos-item"><div class="cos-score" style="color:var(--green)">0.984</div><div class="cos-label">D1 · ACE inhibitors for hypertension</div><div class="cos-bar" style="background:var(--green);width:98%"></div></div>
