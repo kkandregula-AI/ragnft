@@ -303,6 +303,103 @@ footer{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(8,13,2
   </div>
 </div>
 
+<!-- SAMPLE QUERY JOURNEY -->
+<div style="position:relative;z-index:1;margin:0 14px 16px">
+
+  <div style="font-family:var(--font-display);font-size:.58rem;letter-spacing:.18em;color:var(--gold);margin-bottom:10px">
+    🧭 FOLLOW THIS QUERY THROUGH EVERY TAB BELOW
+  </div>
+
+  <!-- THE QUERY BUBBLE -->
+  <div style="background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(56,189,248,.07));border:1px solid rgba(139,92,246,.4);border-radius:14px;padding:14px 16px;margin-bottom:12px;position:relative">
+    <div style="font-size:.58rem;color:var(--violet);font-family:var(--font-display);letter-spacing:.12em;margin-bottom:6px">👤 SAMPLE USER QUERY</div>
+    <div style="font-size:1rem;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:4px">"What medications are used to treat high blood pressure?"</div>
+    <div style="font-size:.7rem;color:var(--muted);line-height:1.55">A patient asks an AI health assistant. The AI has no memory of their records — but it has a <span style="color:var(--cyan)">Medical FAQ knowledge base</span> indexed and ready.</div>
+    <!-- typing cursor effect -->
+    <div style="position:absolute;top:14px;right:14px;width:8px;height:8px;border-radius:50%;background:var(--violet);animation:pulse 1.5s ease-in-out infinite"></div>
+  </div>
+
+  <!-- WITHOUT RAG vs WITH RAG -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    <div style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:12px">
+      <div style="font-size:.6rem;font-weight:700;color:var(--red);margin-bottom:6px;letter-spacing:.08em">❌ WITHOUT RAG</div>
+      <div style="font-size:.68rem;color:#94a3b8;line-height:1.6;font-style:italic">"Common treatments include lisinopril and amlodipine…"</div>
+      <div style="margin-top:6px;font-size:.6rem;color:var(--red)">⚠ May be outdated · No source · Hallucination risk</div>
+    </div>
+    <div style="background:rgba(34,211,165,.06);border:1px solid rgba(34,211,165,.3);border-radius:12px;padding:12px">
+      <div style="font-size:.6rem;font-weight:700;color:var(--green);margin-bottom:6px;letter-spacing:.08em">✅ WITH RAG</div>
+      <div style="font-size:.68rem;color:#94a3b8;line-height:1.6;font-style:italic">"According to medical_faq.pdf (p.7): ACE inhibitors such as lisinopril…"</div>
+      <div style="margin-top:6px;font-size:.6rem;color:var(--green)">✅ Cited · Grounded · Current</div>
+    </div>
+  </div>
+
+  <!-- HOW EACH TAB USES THIS QUERY -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px">
+    <div style="font-size:.58rem;color:var(--gold);font-family:var(--font-display);letter-spacing:.12em;margin-bottom:10px">📍 HOW THIS QUERY FLOWS THROUGH EACH TAB</div>
+
+    <div style="display:flex;flex-direction:column;gap:0">
+
+      <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(26,42,66,.6);align-items:flex-start">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.4);color:var(--violet);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--violet)">🏗️ RAG Architecture</div>
+          <div style="font-size:.65rem;color:var(--muted);line-height:1.5">See the full system the query will travel through — documents → chunks → vectors → retriever → LLM</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(26,42,66,.6);align-items:flex-start">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:var(--violet);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text)">✂️ Chunking</div>
+          <div style="font-size:.65rem;color:var(--muted);line-height:1.5">The Medical FAQ is split into overlapping chunks. "ACE inhibitors for hypertension…" becomes Chunk 34</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(26,42,66,.6);align-items:flex-start">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.28);color:var(--cyan);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--cyan)">🔢 Embeddings</div>
+          <div style="font-size:.65rem;color:var(--muted);line-height:1.5">Our query → <span style="font-family:var(--font-mono);font-size:.62rem;color:var(--cyan)">[-0.023, 0.411, 0.188…]</span> 1536-dim vector that captures its meaning</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(26,42,66,.6);align-items:flex-start">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.28);color:var(--cyan);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text)">🔍 Vector Search</div>
+          <div style="font-size:.65rem;color:var(--muted);line-height:1.5">Query vector vs all chunk vectors. Cosine similarity: D1=<span style="color:var(--green)">0.984</span> ✅, D2 (pasta)=<span style="color:var(--red)">0.490</span> ❌ excluded</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(26,42,66,.6);align-items:flex-start">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(34,211,165,.1);border:1px solid rgba(34,211,165,.28);color:var(--green);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--green)">⚡ Full Pipeline</div>
+          <div style="font-size:.65rem;color:var(--muted);line-height:1.5">Top-4 chunks injected into the LLM prompt → grounded, cited answer generated in ~850ms</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(26,42,66,.6);align-items:flex-start">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.28);color:var(--orange);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">6</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--orange)">📊 Evaluation</div>
+          <div style="font-size:.65rem;color:var(--muted);line-height:1.5">Did it work? Faithfulness=1.0 · Relevancy=0.89 · Context Precision=0.50 — RAGAS grades the answer</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:7px 0;align-items:flex-start">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(244,185,66,.1);border:1px solid rgba(244,185,66,.28);color:var(--gold);font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">+</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--gold)">🚀 Advanced RAG · 🧬 Fine-Tuning · ⚖️ Matrix</div>
+          <div style="font-size:.65rem;color:var(--muted);line-height:1.5">How to make it better, and when to fine-tune the model instead of using RAG</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
 <!-- MAIN TABS -->
 <div class="main-tabs" id="mainTabs">
   <div class="mtab active" onclick="showTab(0)"><div class="micon">🏗️</div><div class="mname">RAG Architecture</div></div>
