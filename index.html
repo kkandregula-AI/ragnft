@@ -1196,6 +1196,97 @@ trainer.<span class="fn">train</span>()  <span class="cmt"># Loss: 2.31→0.94�
         </table></div>
       </div>
 
+      <!-- ── STUDENT ANALOGY ── -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:.6rem;letter-spacing:.15em;color:var(--gold);font-family:'Cinzel',serif;margin-bottom:10px">🎓 THE STUDENT ANALOGY — THE SIMPLEST WAY TO UNDERSTAND ALL THREE</div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+
+          <!-- Base LLM -->
+          <div style="background:linear-gradient(135deg,rgba(56,189,248,.07),rgba(56,189,248,.03));border:1px solid rgba(56,189,248,.3);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+            <div style="font-size:2rem;flex-shrink:0;line-height:1">📚</div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;font-weight:700;color:var(--cyan);letter-spacing:.06em;margin-bottom:4px">BASE LLM (No RAG, No Fine-Tuning)</div>
+              <div style="font-family:'DM Mono',monospace;font-size:.78rem;color:#e2e8f0;margin-bottom:5px">A student who read the entire internet — up to 2023.</div>
+              <div style="font-size:.68rem;color:#6b7fa0;line-height:1.6">Knows a lot. But frozen in time. Ask about your company's refund policy updated last week? No idea. Ask about a news event from yesterday? Blank. The knowledge is vast but permanently static — locked inside the model's weights, never updated.</div>
+              <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">
+                <span style="font-size:.58rem;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;padding:2px 8px;border-radius:8px">❌ No domain expertise</span>
+                <span style="font-size:.58rem;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;padding:2px 8px;border-radius:8px">❌ Frozen at cutoff date</span>
+                <span style="font-size:.58rem;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;padding:2px 8px;border-radius:8px">❌ Can't access YOUR data</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fine-Tuning -->
+          <div style="background:linear-gradient(135deg,rgba(34,211,165,.07),rgba(34,211,165,.03));border:1px solid rgba(34,211,165,.3);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+            <div style="font-size:2rem;flex-shrink:0;line-height:1">🎓</div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;font-weight:700;color:var(--green);letter-spacing:.06em;margin-bottom:4px">FINE-TUNING</div>
+              <div style="font-family:'DM Mono',monospace;font-size:.78rem;color:#e2e8f0;margin-bottom:5px">Same student — who also completed a specialised course in YOUR domain.</div>
+              <div style="font-size:.68rem;color:#6b7fa0;line-height:1.6">The student now deeply understands your industry's terminology, your company's tone, and the specific task formats you need (e.g. always respond in JSON, always classify tickets in three categories). But — the course ended on a fixed date. They still don't know what changed in your policy last week. The expertise is baked in, but still frozen.</div>
+              <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">
+                <span style="font-size:.58rem;background:rgba(34,211,165,.1);border:1px solid rgba(34,211,165,.25);color:var(--green);padding:2px 8px;border-radius:8px">✅ Deep domain expertise</span>
+                <span style="font-size:.58rem;background:rgba(34,211,165,.1);border:1px solid rgba(34,211,165,.25);color:var(--green);padding:2px 8px;border-radius:8px">✅ Custom tone &amp; style</span>
+                <span style="font-size:.58rem;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;padding:2px 8px;border-radius:8px">❌ Still frozen — re-train to update</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RAG -->
+          <div style="background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(139,92,246,.03));border:1px solid rgba(139,92,246,.4);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+            <div style="font-size:2rem;flex-shrink:0;line-height:1">📂</div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;font-weight:700;color:var(--violet);letter-spacing:.06em;margin-bottom:4px">RAG — Retrieval-Augmented Generation</div>
+              <div style="font-family:'DM Mono',monospace;font-size:.78rem;color:#e2e8f0;margin-bottom:5px">Same student — who now carries a live, always-updated folder of YOUR documents into every exam.</div>
+              <div style="font-size:.68rem;color:#6b7fa0;line-height:1.6">Before answering any question, the student opens the folder, finds the most relevant pages, reads them, and then answers — citing the source. You update the folder tonight (new refund policy, Q1 financials, product changelog) and tomorrow morning every answer automatically reflects those updates. The student didn't learn anything new — but the folder did.</div>
+              <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">
+                <span style="font-size:.58rem;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:var(--violet);padding:2px 8px;border-radius:8px">✅ Always up-to-date</span>
+                <span style="font-size:.58rem;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:var(--violet);padding:2px 8px;border-radius:8px">✅ Cites sources</span>
+                <span style="font-size:.58rem;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:var(--violet);padding:2px 8px;border-radius:8px">✅ No retraining needed</span>
+                <span style="font-size:.58rem;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;padding:2px 8px;border-radius:8px">❌ Generic style/tone</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Both Together -->
+          <div style="background:linear-gradient(135deg,rgba(244,185,66,.08),rgba(251,146,60,.04));border:2px solid rgba(244,185,66,.4);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+            <div style="font-size:2rem;flex-shrink:0;line-height:1">🏆</div>
+            <div style="flex:1">
+              <div style="font-size:.68rem;font-weight:700;color:var(--gold);letter-spacing:.06em;margin-bottom:4px">FINE-TUNING + RAG (Production Gold Standard)</div>
+              <div style="font-family:'DM Mono',monospace;font-size:.78rem;color:#e2e8f0;margin-bottom:5px">Specialised student + live updated folder = the perfect domain expert.</div>
+              <div style="font-size:.68rem;color:#6b7fa0;line-height:1.6">The student completed your specialised course (knows your tone, format, and domain terminology perfectly) AND carries a live folder of your latest documents into every exam. They answer with expertise, consistency, and always-current knowledge. This is what Notion AI, GitHub Copilot, and enterprise LLM deployments actually do in production.</div>
+              <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">
+                <span style="font-size:.58rem;background:rgba(244,185,66,.12);border:1px solid rgba(244,185,66,.3);color:var(--gold);padding:2px 8px;border-radius:8px">✅ Expert tone &amp; format</span>
+                <span style="font-size:.58rem;background:rgba(244,185,66,.12);border:1px solid rgba(244,185,66,.3);color:var(--gold);padding:2px 8px;border-radius:8px">✅ Always current facts</span>
+                <span style="font-size:.58rem;background:rgba(244,185,66,.12);border:1px solid rgba(244,185,66,.3);color:var(--gold);padding:2px 8px;border-radius:8px">✅ Citable &amp; grounded</span>
+                <span style="font-size:.58rem;background:rgba(244,185,66,.12);border:1px solid rgba(244,185,66,.3);color:var(--gold);padding:2px 8px;border-radius:8px">✅ Production-grade</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Data source clarity -->
+        <div style="background:#080f1e;border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:13px;margin-bottom:12px">
+          <div style="font-size:.6rem;letter-spacing:.15em;color:var(--cyan);font-family:'Cinzel',serif;margin-bottom:8px">❓ COMMON QUESTION: WHERE DOES DATA COME FROM WITHOUT RAG?</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="font-size:.75rem;flex-shrink:0">🚫</span>
+              <div style="font-size:.7rem;color:#94a3b8;line-height:1.6"><strong style="color:var(--red)">NOT Google Search.</strong> Without RAG, the LLM has no live internet access. It cannot search, browse, or fetch anything in real time.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="font-size:.75rem;flex-shrink:0">🧠</span>
+              <div style="font-size:.7rem;color:#94a3b8;line-height:1.6"><strong style="color:var(--cyan)">Parametric Memory.</strong> All knowledge lives inside the model's billions of weights — compressed patterns learned from training data (web, books, papers, code) collected before the cutoff date.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="font-size:.75rem;flex-shrink:0">📅</span>
+              <div style="font-size:.7rem;color:#94a3b8;line-height:1.6"><strong style="color:var(--amber)">Frozen forever.</strong> Fine-tuning updates the weights once more — but they freeze again after training. Only RAG enables truly dynamic, real-time knowledge without any retraining.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <div class="result-box"><div class="rlabel">✅ GOLDEN RULE</div><div class="rvalue">RAG for facts. Fine-Tuning for behaviour. Use both for production AI.</div><div class="rdesc">Most enterprise AI systems benefit from both: Fine-tune the base model on your domain's style, tone, and task format — then layer RAG on top to ground it in your live knowledge base. Anthropic's Claude with tool use (RAG) and system prompts (behaviour tuning) is the most common production pattern.</div></div>
 
       <div class="insight"><div class="ititle">💡 THE 2025 CONSENSUS</div><div class="itext">As of 2025, Anthropic, OpenAI, and Google's guidance converges: start with RAG (faster, cheaper, more transparent). Add fine-tuning only if you need consistent style/format changes that can't be achieved with prompting. Use RLHF/DPO for alignment and preference tuning. Invest in evaluation (RAGAS, LLM-as-judge) from day one — you can't improve what you don't measure.</div></div>
